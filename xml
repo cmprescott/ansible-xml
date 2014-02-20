@@ -82,17 +82,42 @@ author: Tim Bielawa, Magnus Hedemark
 #       code: nagios action=unsilence host=$inventory_hostname
 '''
 
+"""
+examples
+
+Given:
+
+   <?xml version='1.0' encoding='UTF-8'?>
+   <business type="bar">
+       <name>Tasty Beverage Co.</name>
+       <beers>
+           <beer>Rochefort 10</beer>
+           <beer>St. Bernardus Abbot 12</beer>
+           <beer>Schlitz</beer>
+       </beers>
+       <rating subjective="true">10</rating>
+       <website>
+           <mobilefriendly />
+           <address>http://tastybeverageco.com</address>
+       </website>
+   </business>
+
+
+# Remove the 'subjective' attribute of the rating element
+xml: file=/foo/bar.xml xpath=/business/rating/@subjective ensure=absent
+
+# Set the rating to 11
+xml: file=/foo/bar.xml xpath=/business/rating value=11
+
+# Add a phonenumber element to the business element
+# Implicit 'mkdir -p' behavior where applicable (parent xml nodes created automatically)
+xml: file=/foo/bar.xml xpath=/business/phonenumber value=555-555-1234
+
+"""
 ######################################################################
 
 
 def main():
-    ACTION_CHOICES = [
-        'downtime',
-        'silence',
-        'unsilence',
-        'enable_alerts',
-        'disable_alerts'
-        ]
 
     module = AnsibleModule(
         argument_spec=dict(
