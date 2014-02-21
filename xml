@@ -54,12 +54,20 @@ options:
     required: false
     default: Elements default to no value (but present). Attributes default to an empty string.
     choices: []
-  children:
+  add_children:
     description:
-      - 'Define the child-element(s) of a selected element. Child elements may be given in several forms: A single string (ex: C(children=ansible) to add an empty C(<ansible/>) child element), a single hash where the key is an element name and the value is the element value, or a list of a combination of strings and hashes.'
+      - 'Add additional child-element(s) to a selected element. Child elements must be given as a list and each item may be either a string (ex: C(children=ansible, to add an empty C(<ansible/>) child element), or a hash where the key is an element name and the value is the element value.'
     required: false
     default: null
     choices: []
+  set_children:
+    description:
+      - 'Set the the child-element(s) of a selected element. Removes any existing children. Child elements must be specified as in C(add_children).'
+    required: false
+    default: null
+    choices: []
+
+
 requirements:
     - The remote end must have the Python C(lxml) library installed
 author: Tim Bielawa, Magnus Hedemark
@@ -98,13 +106,13 @@ EXAMPLES = '''
 #        - beer: "Old Rasputin"
 #        - beer: "Old Motor Oil"
 #        - beer: "Old Curmudgeon"
-- xml: file=/foo/bar.xml xpath=/business/beers children={{ new_beers }}
+- xml: file=/foo/bar.xml xpath=/business/beers add_children={{ new_beers }}
 
 # The same, but do it inline
 - xml:
     file: /foo/bar.xml
     xpath: /business/beers
-    children:
+    add_children:
         - beer: "Old Rasputin"
         - beer: "Old Motor Oil"
         - beer: "Old Curmudgeon"
@@ -126,7 +134,36 @@ xml: file=/foo/bar.xml xpath=/business/website/validxhtml/@validatedon
 ######################################################################
 
 from lxml import etree
+import lxml
 import os
+
+def is_node(tree, xpath):
+    """ Test if a given xpath matches anything and if that match is a node.
+
+    For now we just assume you're only searching for one specific thing."""
+    if xpath_matches(tree, xpath):
+        # OK, it found something
+        match = tree.xpath(xpath)
+        if type(match[0]) == lxml.etree._Element:
+            return True
+
+    return False
+
+def is_attribute(tree, xpath):
+    """ Test if a given xpath matches and that match is an attribute """
+    if xpath_matches(tree, xpath):
+        match = tree.xpath(xpath)
+        if type(match[0]) == lxml.etree._ElementStringResult:
+            return True
+
+    return False
+
+def xpath_matches(tree, xpath):
+    """ Test if a node exists """
+    if tree.xpath(xpath):
+        return True
+    else:
+        return False
 
 def delete_xpath_target(tree, xpath, module):
     try:
@@ -138,7 +175,22 @@ def delete_xpath_target(tree, xpath, module):
         finish(tree, xpath, module)
 
 def set_target_children(tree, xpath, children, module):
-    pass
+    matches = tree.xpath(xpath)
+
+    # Create a list of our new children
+    children = children_to_nodes(children=children, module=module)
+
+    # xpaths always return matches as a list, so....
+    for match in matches:
+        # First remove any existing children
+        for element in match.getchildren():
+            match.remove(element)
+
+        # Add our new children to the node
+        match.extend(children)
+
+    # Write it out
+    finish(tree, xpath, module)
 
 def set_target_attribute(tree, xpath, value, module):
     pass
@@ -146,8 +198,23 @@ def set_target_attribute(tree, xpath, value, module):
 def set_target_value(tree, xpath, value, module):
     pass
 
-def children_to_nodes(tree, children, module):
-    pass
+def child_to_element(child, module):
+    ch_type = type(child)
+    if ch_type == str or ch_type == unicode:
+        return etree.Element(child)
+    elif ch_type == dict:
+        if len(child) > 1:
+            abort("Can only create children from hashes with one key", module)
+        (key, value) = child.items()[0]
+        node = etree.Element(key)
+        node.text = value
+        return node
+    else:
+        abort("Invalid child type: %s. Children must be either strings or hashes." % str(ch_type), module)
+
+def children_to_nodes(children=[], module=None):
+    """turn a str/hash/list of str&hash into a list of elements"""
+    return [child_to_element(child, module) for child in children]
 
 def abort(msg, m):
     m.fail_json(msg=msg)
@@ -169,14 +236,19 @@ def main():
             children=dict(required=False, default=None)
         ),
         supports_check_mode=True,
-        mutually_exclusive = [['value','children']],
+        mutually_exclusive = [
+            ['value','set_children'],
+            ['value','add_children'],
+            ['set_children', 'add_children']
+        ]
     )
 
     xml_file = module.params['file']
     xpath = module.params['xpath']
     ensure = module.params['ensure']
     value = module.params['value']
-    children = module.params['children']
+    set_children = module.params['set_children']
+    add_children = module.params['add_children']
 
     ##################################################################
     # Check if the file exists
@@ -212,9 +284,18 @@ def main():
     ##################################################################
 
     ##################################################################
-    # Children set?
-    # Yes: Set children target
-    set_target_children(xpath, children)
+    # add_children && set_children both set?: should have already aborted by now
+    ##################################################################
+
+    ##################################################################
+    # set_children set?
+    # Yes: Set children of target
+    set_target_children(x, xpath, set_children, module)
+
+    ##################################################################
+    # add_children set?
+    # Yes: Add children to target
+    add_target_children(x, xpath, add_children, module)
 
     # No?: Carry on
 
