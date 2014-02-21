@@ -128,21 +128,35 @@ xml: file=/foo/bar.xml xpath=/business/website/validxhtml/@validatedon
 from lxml import etree
 import os
 
-def delete_xpath_target(xpath):
+def delete_xpath_target(tree, xpath, module):
+    try:
+        for node in tree.xpath(xpath):
+            node.getparent().remove(node)
+    except:
+        abort("Couldn't delete xpath target: %s" % xpath, module)
+    else:
+        finish(tree, xpath, module)
+
+def set_target_children(tree, xpath, children, module):
     pass
 
-def set_target_children(xpath, children):
+def set_target_attribute(tree, xpath, value, module):
     pass
 
-def set_target_attribute(xpath, value):
+def set_target_value(tree, xpath, value, module):
     pass
 
-def set_target_value(xpath, value):
+def children_to_nodes(tree, children, module):
     pass
 
-def children_to_nodes(children):
-    pass
+def abort(msg, m):
+    m.fail_json(msg=msg)
 
+def finish(tree, xpath, m):
+    # Serialize the results and quit
+    result = etree.tostring(tree, pretty_print=True)
+    open(m.params['file'], 'w').write(result)
+    m.exit_json(changed=True,actions={"xpath": xpath, "ensure": m.params['ensure']})
 
 
 def main():
@@ -180,14 +194,17 @@ def main():
                 msg="Error while parsing file: %s" %
                 str(e))
 
+    # module.fail_json(msg="OK. Well, etree parsed the xml file...")
+
+    # module.exit_json(what_did={"foo": "bar"}, changed=True)
+
     ##################################################################
     # File exists:
     # Ensure:
     if ensure == 'absent':
         # - absent: delete xpath target
-        delete_xpath_target(xpath)
+        delete_xpath_target(x, xpath, module)
         # Exit
-        pass
     # - present: carry on
 
     ##################################################################

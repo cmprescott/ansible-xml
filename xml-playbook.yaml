@@ -1,0 +1,43 @@
+---
+- hosts: localhost
+  vars_files: [group_vars/all]
+  user: tbielawa
+  tasks:
+      - include: setup.yaml
+
+      - name: Remove the 'rating' node
+        xml: file=/tmp/foo2.xml xpath=/business/rating ensure=absent
+
+      # - name: Remove the 'subjective' attribute of the rating element
+      #   xml: file=/tmp/foo2.xml xpath=/business/rating/@subjective ensure=absent
+
+      # - name: Set the rating to 11
+      #   xml: file=/tmp/foo2.xml xpath=/business/rating value=11
+
+      # - name: Add a phonenumber element to the business element. Implicit 'mkdir -p' behavior where applicable (parent xml nodes created automatically)
+      #   xml: file=/tmp/foo2.xml xpath=/business/phonenumber value=555-555-1234
+
+      # # - name: Add several more (bad) beers to the beers element, assuming a group_vars file with a 'bad_beers' variable in it
+      # #   xml: file=/tmp/foo2.xml xpath=/business/beers children={{ bad_beers }}
+
+      # - name: The same, but do it inline
+      #   xml:
+      #     file: /tmp/foo2.xml
+      #     xpath: /business/beers
+      #     children:
+      #       - beer: "Old Rasputin"
+      #       - beer: "Old Motor Oil"
+      #       - beer: "Old Curmudgeon"
+
+      # - name: Add a validxhtml element to the website element. Note that 'ensure' is 'present' by default, and 'value' defaults to null for elements. The result is something like <website><validxhtml />...</website>
+      #   xml: file=/tmp/foo2.xml xpath=/business/website/validxhtml
+
+
+      # # actually makes the last example redundant because of the implicit
+      # # parent-node creation behavior. The result is something like
+      # # <website><validxhtml validatedon='' />...</website>
+      # - name: Add an empty validatedon attribute to the validxhtml element. This
+      #   xml: file=/tmp/foo2.xml xpath=/business/website/validxhtml/@validatedon
+
+      # - name: Remove all children from the website element
+      #   xml: file=/tmp/foo2.xml xpath=/business/website/* ensure=absent
