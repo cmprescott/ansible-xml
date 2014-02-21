@@ -5,8 +5,21 @@
   tasks:
       - include: setup.yaml
 
-      - name: Remove the 'rating' node
+      - name: Verify task requires a valid 'file' attribute
+        xml: xpath=/ file=/klfj/dlfjkldf/sojfkljf.xml
+        ignore_errors: yes
+
+      - name: Verify the module removes the 'rating' node
         xml: file=/tmp/foo2.xml xpath=/business/rating ensure=absent
+
+      - name: Verify that Ansible detects mutually exclusive attributes (children & value)
+        xml:
+            file: /tmp/foo2.xml
+            children:
+                - child01
+                - child02
+            value: conflict!
+        ignore_errors: yes
 
       # - name: Remove the 'subjective' attribute of the rating element
       #   xml: file=/tmp/foo2.xml xpath=/business/rating/@subjective ensure=absent
@@ -17,17 +30,27 @@
       # - name: Add a phonenumber element to the business element. Implicit 'mkdir -p' behavior where applicable (parent xml nodes created automatically)
       #   xml: file=/tmp/foo2.xml xpath=/business/phonenumber value=555-555-1234
 
-      # # - name: Add several more (bad) beers to the beers element, assuming a group_vars file with a 'bad_beers' variable in it
-      # #   xml: file=/tmp/foo2.xml xpath=/business/beers children={{ bad_beers }}
+      - name: Add a badbeers element
+        xml:
+            file: /tmp/foo2.xml
+            xpath: /business
+            children:
+                - badbeers
 
-      # - name: The same, but do it inline
-      #   xml:
-      #     file: /tmp/foo2.xml
-      #     xpath: /business/beers
-      #     children:
-      #       - beer: "Old Rasputin"
-      #       - beer: "Old Motor Oil"
-      #       - beer: "Old Curmudgeon"
+      - name: Add several more (bad) beers to the beers element, assuming a group_vars file with a 'bad_beers' variable in it
+        xml:
+            file: /tmp/foo2.xml
+            xpath: /business/beers
+            children: "{{ bad_beers }}"
+
+      - name: Add several more (bad) beers to the beers element
+        xml:
+          file: /tmp/foo2.xml
+          xpath: /business/beers
+          children:
+            - beer: "Old Rasputin"
+            - beer: "Old Motor Oil"
+            - beer: "Old Curmudgeon"
 
       # - name: Add a validxhtml element to the website element. Note that 'ensure' is 'present' by default, and 'value' defaults to null for elements. The result is something like <website><validxhtml />...</website>
       #   xml: file=/tmp/foo2.xml xpath=/business/website/validxhtml
