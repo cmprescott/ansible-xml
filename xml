@@ -25,7 +25,7 @@ DOCUMENTATION = '''
 module: xml
 short_description: Manage bits and pieces of XML files
 description:
-  - A CRUD-like interface to managing bits of XML flies.
+  - A CRUD-like interface to managing bits of XML flies. You might also be interested in a brief tutorial, U(http://www.w3schools.com/xpath/).
 version_added: "1.0"
 options:
   file:
@@ -56,124 +56,161 @@ options:
     choices: []
   children:
     description:
-      - Define the child-element(s) of a selected element. Children elements may be given in several forms. A single string (ex C(children=ansible) to add a C(<ansible/>) child element), A single hash where the key is an element name and the value is the element value, or a list of a combination of strings and hashes.
+      - 'Define the child-element(s) of a selected element. Child elements may be given in several forms: A single string (ex: C(children=ansible) to add an empty C(<ansible/>) child element), a single hash where the key is an element name and the value is the element value, or a list of a combination of strings and hashes.'
     required: false
     default: null
     choices: []
 requirements:
     - The remote end must have the Python C(lxml) library installed
 author: Tim Bielawa, Magnus Hedemark
-# examples:
-#     - description: set 30 minutes of apache downtime
-#       code: nagios action=downtime minutes=30 service=httpd host=$inventory_hostname
-#     - description: schedule an hour of HOST downtime
-#       code: nagios action=downtime minutes=60 service=host host=$inventory_hostname
-#     - description: schedule downtime for a few services
-#       code: nagios action=downtime services=frob,foobar,qeuz host=$inventory_hostname
-#     - description: enable SMART disk alerts
-#       code: nagios action=enable_alerts service=smart host=$inventory_hostname
-#     - description: "two services at once: disable httpd and nfs alerts"
-#       code: nagios action=disable_alerts service=httpd,nfs host=$inventory_hostname
-#     - description: disable HOST alerts
-#       code: nagios action=disable_alerts service=host host=$inventory_hostname
-#     - description: silence ALL alerts
-#       code: nagios action=silence host=$inventory_hostname
-#     - description: unsilence all alerts
-#       code: nagios action=unsilence host=$inventory_hostname
 '''
 
-"""
-examples
-
-Given:
-
-   <?xml version='1.0' encoding='UTF-8'?>
-   <business type="bar">
-       <name>Tasty Beverage Co.</name>
-       <beers>
-           <beer>Rochefort 10</beer>
-           <beer>St. Bernardus Abbot 12</beer>
-           <beer>Schlitz</beer>
-       </beers>
-       <rating subjective="true">10</rating>
-       <website>
-           <mobilefriendly />
-           <address>http://tastybeverageco.com</address>
-       </website>
-   </business>
-
+EXAMPLES = '''
+#Given: an xml file (/foo/bar.xml):
+#
+#   <?xml version='1.0' encoding='UTF-8'?>
+#   <business type="bar">
+#       <name>Tasty Beverage Co.</name>
+#       <beers>
+#           <beer>Rochefort 10</beer>
+#           <beer>St. Bernardus Abbot 12</beer>
+#           <beer>Schlitz</beer>
+#       </beers>
+#       <rating subjective="true">10</rating>
+#       <website>
+#           <mobilefriendly />
+#           <address>http://tastybeverageco.com</address>
+#       </website>
+#   </business>
 
 # Remove the 'subjective' attribute of the rating element
-xml: file=/foo/bar.xml xpath=/business/rating/@subjective ensure=absent
+- xml: file=/foo/bar.xml xpath=/business/rating/@subjective ensure=absent
 
 # Set the rating to 11
-xml: file=/foo/bar.xml xpath=/business/rating value=11
+- xml: file=/foo/bar.xml xpath=/business/rating value=11
 
 # Add a phonenumber element to the business element
 # Implicit 'mkdir -p' behavior where applicable (parent xml nodes created automatically)
-xml: file=/foo/bar.xml xpath=/business/phonenumber value=555-555-1234
+- xml: file=/foo/bar.xml xpath=/business/phonenumber value=555-555-1234
 
-"""
+# Add several more beers to the beers element, assuming a vars.yaml file with
+#    new_beers:
+#        - beer: "Old Rasputin"
+#        - beer: "Old Motor Oil"
+#        - beer: "Old Curmudgeon"
+- xml: file=/foo/bar.xml xpath=/business/beers children={{ new_beers }}
+
+# The same, but do it inline
+- xml:
+    file: /foo/bar.xml
+    xpath: /business/beers
+    children:
+        - beer: "Old Rasputin"
+        - beer: "Old Motor Oil"
+        - beer: "Old Curmudgeon"
+
+# Add a validxhtml element to the website element. Note that 'ensure'
+# is 'present' by default, and 'value' defaults to null for
+# elements. The result is something like <website><validxhtml />...</website>
+- xml: file=/foo/bar.xml xpath=/business/website/validxhtml
+
+# Add an empty validatedon attribute to the validxhtml element. This
+# actually makes the last example redundant because of the implicit
+# parent-node creation behavior. The result is something like
+# <website><validxhtml validatedon='' />...</website>
+xml: file=/foo/bar.xml xpath=/business/website/validxhtml/@validatedon
+
+# Remove all children from the website element
+- xml: file=/foo/bar.xml xpath=/business/website/* ensure=absent
+'''
 ######################################################################
+
+from lxml import etree
+import os
+
+def delete_xpath_target(xpath):
+    pass
+
+def set_target_children(xpath, children):
+    pass
+
+def set_target_attribute(xpath, value):
+    pass
+
+def set_target_value(xpath, value):
+    pass
+
+def children_to_nodes(children):
+    pass
+
 
 
 def main():
-
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(required=True, default=None, choices=ACTION_CHOICES),
-            author=dict(default='Ansible'),
-            host=dict(required=True, default=None),
-            minutes=dict(default=30),
-            cmdfile=dict(default=which_cmdfile()),
-            services=dict(default=None, aliases=['service']),
-            )
-        )
+            file=dict(required=True),
+            xpath=dict(required=False, default='/'),
+            ensure=dict(required=False, default='present', choices=['absent', 'present']),
+            value=dict(required=False, default=None),
+            children=dict(required=False, default=None)
+        ),
+        supports_check_mode=True,
+        mutually_exclusive = [['value','children']],
+    )
 
-    action = module.params['action']
-    minutes = module.params['minutes']
-    services = module.params['services']
-    cmdfile = module.params['cmdfile']
-
-    ##################################################################
-    # Required args per action:
-    # downtime = (minutes, service, host)
-    # (un)silence = (host)
-    # (enable/disable)_alerts = (service, host)
-    #
-    # AnsibleModule will verify most stuff, we need to verify
-    # 'minutes' and 'service' manually.
+    xml_file = module.params['file']
+    xpath = module.params['xpath']
+    ensure = module.params['ensure']
+    value = module.params['value']
+    children = module.params['children']
 
     ##################################################################
-    if action == 'downtime':
-        # Make sure there's an actual service selected
-        if not services:
-            module.fail_json(msg='no service selected to set downtime for')
-        # Make sure minutes is a number
+    # Check if the file exists
+    # No: abort
+    if not os.path.isfile(xml_file):
+        module.fail_json(
+            msg="The target XML file does not exist: %s" %
+            xml_file)
+    else:
+        # Try to parse in the target XML file
         try:
-            m = int(minutes)
-            if not isinstance(m, types.IntType):
-                module.fail_json(msg='minutes must be a number')
-        except:
-            module.fail_json(msg='invalid entry for minutes')
+            x = etree.parse(file(xml_file, 'r'))
+        except etree.XMLSyntaxError, e:
+            module.fail_json(
+                msg="Error while parsing file: %s" %
+                str(e))
 
     ##################################################################
-    if action in ['enable_alerts', 'disable_alerts']:
-        if not services:
-            module.fail_json(msg='a service is required when setting alerts')
+    # File exists:
+    # Ensure:
+    if ensure == 'absent':
+        # - absent: delete xpath target
+        delete_xpath_target(xpath)
+        # Exit
+        pass
+    # - present: carry on
 
     ##################################################################
-    if not cmdfile:
-        module.fail_json('unable to locate nagios.cfg')
+    # children && value both set?: should have already aborted by now
+    ##################################################################
 
     ##################################################################
-    ansible_nagios = Nagios(module, **module.params)
-    ansible_nagios.act()
+    # Children set?
+    # Yes: Set children target
+    set_target_children(xpath, children)
+
+    # No?: Carry on
+
     ##################################################################
+    # Is the xpath target an attribute selector?
+    # Yes: Set the attribute, exit
+    set_target_attribute(xpath, value)
+
+    # No: Set the node value, exit
+    set_target_value(xpath, value)
 
 
 
 ######################################################################
-# this is magic, see lib/ansible/module_common.py
-#<<INCLUDE_ANSIBLE_MODULE_COMMON>>
+from ansible.module_utils.basic import *
 main()
