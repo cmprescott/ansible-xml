@@ -192,8 +192,12 @@ def set_target_children(tree, xpath, children, module):
     # Write it out
     finish(tree, xpath, module)
 
-def set_target_attribute(tree, xpath, value, module):
-    pass
+def set_target_attribute(tree, xpath, attribute, value, module):
+    if is_node(tree, xpath):
+        for element in tree.xpath(xpath):
+            element.set(attribute, value)
+
+    finish(tree, xpath, module)
 
 def set_target_value(tree, xpath, value, module):
     pass
@@ -220,9 +224,7 @@ def abort(msg, m):
     m.fail_json(msg=msg)
 
 def finish(tree, xpath, m):
-    # Serialize the results and quit
-    result = etree.tostring(tree, pretty_print=True)
-    open(m.params['file'], 'w').write(result)
+    tree.write(m.params['file'], xml_declaration=True, encoding='UTF-8')
     m.exit_json(changed=True,actions={"xpath": xpath, "ensure": m.params['ensure']})
 
 
@@ -233,7 +235,9 @@ def main():
             xpath=dict(required=False, default='/'),
             ensure=dict(required=False, default='present', choices=['absent', 'present']),
             value=dict(required=False, default=None),
-            children=dict(required=False, default=None)
+            attribute=dict(required=False, default=None),
+            add_children=dict(required=False, default=None),
+            set_children=dict(required=False, default=None)
         ),
         supports_check_mode=True,
         mutually_exclusive = [
@@ -247,6 +251,7 @@ def main():
     xpath = module.params['xpath']
     ensure = module.params['ensure']
     value = module.params['value']
+    attribute = module.params['attribute']
     set_children = module.params['set_children']
     add_children = module.params['add_children']
 
@@ -290,22 +295,25 @@ def main():
     ##################################################################
     # set_children set?
     # Yes: Set children of target
-    set_target_children(x, xpath, set_children, module)
+    if module.params['set_children']:
+        set_target_children(x, xpath, set_children, module)
 
     ##################################################################
     # add_children set?
     # Yes: Add children to target
-    add_target_children(x, xpath, add_children, module)
+    if module.params['add_children']:
+        add_target_children(x, xpath, add_children, module)
 
     # No?: Carry on
 
     ##################################################################
     # Is the xpath target an attribute selector?
     # Yes: Set the attribute, exit
-    set_target_attribute(xpath, value)
+    if module.params['value']:
+        set_target_attribute(x, xpath, attribute, value, module)
 
     # No: Set the node value, exit
-    set_target_value(xpath, value)
+    #set_target_value(xpath, value)
 
 
 
