@@ -25,7 +25,7 @@ DOCUMENTATION = '''
 module: xml
 short_description: Manage bits and pieces of XML files
 description:
-  - A CRUD-like interface to managing bits of XML flies. You might also be interested in a brief tutorial, U(http://www.w3schools.com/xpath/).
+  - A CRUD-like interface to managing bits of XML flies. You might also be interested in a brief tutorial, U(http://www.w3schools.com/xpath/). Note that module this does not handle complicated xpath expressions. So limit xpath selectors to simple expressions.
 version_added: "1.0"
 options:
   file:
@@ -42,7 +42,7 @@ options:
     choices: []
   ensure:
     description:
-      - Set or remove an element
+      - Set or remove an xpath selection (node(s), attribute(s))
     required: false
     default: present
     choices:
@@ -50,13 +50,13 @@ options:
       - "present"
   value:
     description:
-      - Desired state of the selected element/attribute. Either a string, or to unset a value, the Python C(None) keyword (YAML Equivalent, C(null)).
+      - Desired state of the selected attribute. Either a string, or to unset a value, the Python C(None) keyword (YAML Equivalent, C(null)).
     required: false
     default: Elements default to no value (but present). Attributes default to an empty string.
     choices: []
   add_children:
     description:
-      - 'Add additional child-element(s) to a selected element. Child elements must be given as a list and each item may be either a string (ex: C(children=ansible, to add an empty C(<ansible/>) child element), or a hash where the key is an element name and the value is the element value.'
+      - 'Add additional child-element(s) to a selected element. Child elements must be given in a list and each item may be either a string (ex: C(children=ansible) to add an empty C(<ansible/>) child element), or a hash where the key is an element name and the value is the element value.'
     required: false
     default: null
     choices: []
