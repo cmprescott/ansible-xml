@@ -234,7 +234,8 @@ def main():
                 msg="Error while parsing file: %s" %
                 str(e))
 
-    print_match(x, xpath, module)
+    if module.params['print_match']:
+        print_match(x, xpath, module)
 
     # module.fail_json(msg="OK. Well, etree parsed the xml file...")
 
