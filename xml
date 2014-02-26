@@ -60,6 +60,12 @@ options:
     required: false
     default: null
     choices: []
+  print_match:
+    description:
+      - "Search for a given C(xpath) and print out any matches"
+    required: false
+    default: null
+    choices: []
 requirements:
     - The remote end must have the Python C(lxml) library installed
 author: Tim Bielawa, Magnus Hedemark
@@ -67,8 +73,21 @@ author: Tim Bielawa, Magnus Hedemark
 
 
 from lxml import etree
+try:
+    import json
+except:
+    import simplejson as json
 import lxml
 import os
+
+def print_match(tree, xpath, module):
+    match = tree.xpath(xpath)
+    match_xpaths = []
+    for m in match:
+        match_xpaths.append(tree.getpath(m))
+    match_str = json.dumps(match_xpaths)
+    msg = "selector '%s' match: %s" % (xpath, match_str)
+    finish(tree, xpath, module, changed=False, msg=msg)
 
 def is_node(tree, xpath):
     """ Test if a given xpath matches anything and if that match is a node.
@@ -166,10 +185,10 @@ def children_to_nodes(children=[], module=None):
 def abort(msg, m):
     m.fail_json(msg=msg)
 
-def finish(tree, xpath, m, changed=False):
+def finish(tree, xpath, m, changed=False, msg=""):
     if changed:
         tree.write(m.params['file'], xml_declaration=True, encoding='UTF-8')
-    m.exit_json(changed=changed,actions={"xpath": xpath, "ensure": m.params['ensure']})
+    m.exit_json(changed=changed,actions={"xpath": xpath, "ensure": m.params['ensure']}, msg=msg)
 
 def main():
     module = AnsibleModule(
@@ -180,7 +199,8 @@ def main():
             value=dict(required=False, default=None),
             attribute=dict(required=False, default=None),
             add_children=dict(required=False, default=None),
-            set_children=dict(required=False, default=None)
+            set_children=dict(required=False, default=None),
+            print_match=dict(required=False, default=None, type='bool')
         ),
         supports_check_mode=True,
         mutually_exclusive = [
@@ -213,6 +233,8 @@ def main():
             module.fail_json(
                 msg="Error while parsing file: %s" %
                 str(e))
+
+    print_match(x, xpath, module)
 
     # module.fail_json(msg="OK. Well, etree parsed the xml file...")
 
