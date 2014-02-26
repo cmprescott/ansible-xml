@@ -245,7 +245,7 @@ def main():
     # add_children set?
     # Yes: Add children to target
     if module.params['add_children']:
-        add_target_children(x, xpath, add_childreno, module)
+        add_target_children(x, xpath, add_children, module)
 
     # No?: Carry on
 
