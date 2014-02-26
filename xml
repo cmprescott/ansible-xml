@@ -131,7 +131,8 @@ def set_target_children(tree, xpath, children, module):
 def add_target_children(tree, xpath, children, module):
     if is_node(tree, xpath):
         new_kids = children_to_nodes(children, module)
-        tree.xpath(xpath).extend(new_kids)
+        for node in tree.xpath(xpath):
+            node.extend(new_kids)
         finish(tree, xpath, module, changed=True)
     else:
         finish(tree, xpath, module)
