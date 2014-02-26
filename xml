@@ -14,12 +14,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-######################################################################
-# Copied the Nagios module over so we have a starting template
-######################################################################
-
-
-
 DOCUMENTATION = '''
 ---
 module: xml
@@ -66,72 +60,11 @@ options:
     required: false
     default: null
     choices: []
-
-
 requirements:
     - The remote end must have the Python C(lxml) library installed
 author: Tim Bielawa, Magnus Hedemark
 '''
 
-EXAMPLES = '''
-#Given: an xml file (/foo/bar.xml):
-#
-#   <?xml version='1.0' encoding='UTF-8'?>
-#   <business type="bar">
-#       <name>Tasty Beverage Co.</name>
-#       <beers>
-#           <beer>Rochefort 10</beer>
-#           <beer>St. Bernardus Abbot 12</beer>
-#           <beer>Schlitz</beer>
-#       </beers>
-#       <rating subjective="true">10</rating>
-#       <website>
-#           <mobilefriendly />
-#           <address>http://tastybeverageco.com</address>
-#       </website>
-#   </business>
-
-# Remove the 'subjective' attribute of the rating element
-- xml: file=/foo/bar.xml xpath=/business/rating/@subjective ensure=absent
-
-# Set the rating to 11
-- xml: file=/foo/bar.xml xpath=/business/rating value=11
-
-# Add a phonenumber element to the business element
-# Implicit 'mkdir -p' behavior where applicable (parent xml nodes created automatically)
-- xml: file=/foo/bar.xml xpath=/business/phonenumber value=555-555-1234
-
-# Add several more beers to the beers element, assuming a vars.yaml file with
-#    new_beers:
-#        - beer: "Old Rasputin"
-#        - beer: "Old Motor Oil"
-#        - beer: "Old Curmudgeon"
-- xml: file=/foo/bar.xml xpath=/business/beers add_children={{ new_beers }}
-
-# The same, but do it inline
-- xml:
-    file: /foo/bar.xml
-    xpath: /business/beers
-    add_children:
-        - beer: "Old Rasputin"
-        - beer: "Old Motor Oil"
-        - beer: "Old Curmudgeon"
-
-# Add a validxhtml element to the website element. Note that 'ensure'
-# is 'present' by default, and 'value' defaults to null for
-# elements. The result is something like <website><validxhtml />...</website>
-- xml: file=/foo/bar.xml xpath=/business/website/validxhtml
-
-# Add an empty validatedon attribute to the validxhtml element. This
-# actually makes the last example redundant because of the implicit
-# parent-node creation behavior. The result is something like
-# <website><validxhtml validatedon='' />...</website>
-xml: file=/foo/bar.xml xpath=/business/website/validxhtml/@validatedon
-
-# Remove all children from the website element
-- xml: file=/foo/bar.xml xpath=/business/website/* ensure=absent
-'''
-######################################################################
 
 from lxml import etree
 import lxml
@@ -172,13 +105,15 @@ def delete_xpath_target(tree, xpath, module):
     except:
         abort("Couldn't delete xpath target: %s" % xpath, module)
     else:
-        finish(tree, xpath, module)
+        finish(tree, xpath, module, changed=True)
 
 def set_target_children(tree, xpath, children, module):
     matches = tree.xpath(xpath)
 
     # Create a list of our new children
     children = children_to_nodes(children=children, module=module)
+
+    changed = False
 
     # xpaths always return matches as a list, so....
     for match in matches:
@@ -188,19 +123,26 @@ def set_target_children(tree, xpath, children, module):
 
         # Add our new children to the node
         match.extend(children)
+        changed = True
 
     # Write it out
-    finish(tree, xpath, module)
+    finish(tree, xpath, module, changed=changed)
+
+def add_target_children(tree, xpath, children, module):
+    if is_node(tree, xpath):
+        new_kids = children_to_nodes(children, module)
+        tree.xpath(xpath).extend(new_kids)
+        finish(tree, xpath, module, changed=True)
+    else:
+        finish(tree, xpath, module)
 
 def set_target_attribute(tree, xpath, attribute, value, module):
     if is_node(tree, xpath):
         for element in tree.xpath(xpath):
             element.set(attribute, value)
-
-    finish(tree, xpath, module)
-
-def set_target_value(tree, xpath, value, module):
-    pass
+            finish(tree, xpath, module, changed=True)
+        else:
+            finish(tree, xpath, module, changed=True)
 
 def child_to_element(child, module):
     ch_type = type(child)
@@ -223,10 +165,10 @@ def children_to_nodes(children=[], module=None):
 def abort(msg, m):
     m.fail_json(msg=msg)
 
-def finish(tree, xpath, m):
-    tree.write(m.params['file'], xml_declaration=True, encoding='UTF-8')
-    m.exit_json(changed=True,actions={"xpath": xpath, "ensure": m.params['ensure']})
-
+def finish(tree, xpath, m, changed=False):
+    if changed:
+        tree.write(m.params['file'], xml_declaration=True, encoding='UTF-8')
+    m.exit_json(changed=changed,actions={"xpath": xpath, "ensure": m.params['ensure']})
 
 def main():
     module = AnsibleModule(
@@ -302,7 +244,7 @@ def main():
     # add_children set?
     # Yes: Add children to target
     if module.params['add_children']:
-        add_target_children(x, xpath, add_children, module)
+        add_target_children(x, xpath, add_childreno, module)
 
     # No?: Carry on
 
@@ -311,11 +253,6 @@ def main():
     # Yes: Set the attribute, exit
     if module.params['value']:
         set_target_attribute(x, xpath, attribute, value, module)
-
-    # No: Set the node value, exit
-    #set_target_value(xpath, value)
-
-
 
 ######################################################################
 from ansible.module_utils.basic import *
