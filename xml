@@ -157,12 +157,15 @@ def add_target_children(tree, xpath, children, module):
         finish(tree, xpath, module)
 
 def set_target_attribute(tree, xpath, attribute, value, module):
+    changed = False
+
     if is_node(tree, xpath):
         for element in tree.xpath(xpath):
-            if not module.check_mode: element.set(attribute, value)
-            finish(tree, xpath, module, changed=True)
-        else:
-            finish(tree, xpath, module, changed=True)
+            if (element.get(attribute) != value):
+                if not module.check_mode: element.set(attribute, value)
+                changed = True
+
+    finish(tree, xpath, module, changed=changed)
 
 def child_to_element(child, module):
     ch_type = type(child)
