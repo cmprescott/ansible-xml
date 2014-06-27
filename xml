@@ -120,7 +120,7 @@ def xpath_matches(tree, xpath):
 def delete_xpath_target(tree, xpath, module):
     try:
         for node in tree.xpath(xpath):
-            node.getparent().remove(node)
+            if not module.check_mode: node.getparent().remove(node)
     except:
         abort("Couldn't delete xpath target: %s" % xpath, module)
     else:
@@ -138,10 +138,10 @@ def set_target_children(tree, xpath, children, module):
     for match in matches:
         # First remove any existing children
         for element in match.getchildren():
-            match.remove(element)
+            if not module.check_mode: match.remove(element)
 
         # Add our new children to the node
-        match.extend(children)
+        if not module.check_mode: match.extend(children)
         changed = True
 
     # Write it out
@@ -151,7 +151,7 @@ def add_target_children(tree, xpath, children, module):
     if is_node(tree, xpath):
         new_kids = children_to_nodes(children, module)
         for node in tree.xpath(xpath):
-            node.extend(new_kids)
+            if not module.check_mode: node.extend(new_kids)
         finish(tree, xpath, module, changed=True)
     else:
         finish(tree, xpath, module)
@@ -159,7 +159,7 @@ def add_target_children(tree, xpath, children, module):
 def set_target_attribute(tree, xpath, attribute, value, module):
     if is_node(tree, xpath):
         for element in tree.xpath(xpath):
-            element.set(attribute, value)
+            if not module.check_mode: element.set(attribute, value)
             finish(tree, xpath, module, changed=True)
         else:
             finish(tree, xpath, module, changed=True)
