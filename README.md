@@ -7,10 +7,23 @@ and pieces of XML files and strings.
 # Notes
 
 * This module is not 100% complete. No promises of support are made.
-
 * **Pull requests are welcome!**
-
 * This software is available under the terms of the GPLv2 license.
+
+
+# What is XPath?
+
+"XPath uses path expressions to select nodes or node-sets in an XML
+document. The node is selected by following a path or steps."
+
+Basically, it's a syntax which allows you to select a specific, or
+collection, of elements or attributes in an XML file.
+
+**Tutorials**
+
+* [w3cschools #1](http://www.w3schools.com/xpath/xpath_syntax.asp)
+* [w3cschools #2](http://www.w3schools.com/XPath/)
+
 
 # Examples
 
