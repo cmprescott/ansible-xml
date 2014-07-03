@@ -17,7 +17,7 @@
 DOCUMENTATION = '''
 ---
 module: xml
-short_description: Manage bits and pieces of XML files
+short_description: Manage bits and pieces of XML files or strings
 description:
   - A CRUD-like interface to managing bits of XML flies. You might also be interested in a brief tutorial, U(http://www.w3schools.com/xpath/). Note that module this does not handle complicated xpath expressions. So limit xpath selectors to simple expressions.
 version_added: "1.0"
@@ -25,7 +25,13 @@ options:
   file:
     description:
       - Path to the file to operate on. File must exist ahead of time.
-    required: true
+    required: true unless xmlstring is given
+    default: null
+    choices: []
+  xmlstring:
+    description:
+      - A string containing XML on which to operate.
+    required: true unless file is given
     default: null
     choices: []
   xpath:
@@ -60,6 +66,12 @@ options:
     required: false
     default: null
     choices: []
+  count:
+    description:
+      - "Search for a given C(xpath) and provide the count of any matches"
+    required: false
+    default: null
+    choices: []
   print_match:
     description:
       - "Search for a given C(xpath) and print out any matches"
@@ -72,6 +84,7 @@ author: Tim Bielawa, Magnus Hedemark
 '''
 
 
+from io import BytesIO
 from lxml import etree
 try:
     import json
@@ -88,6 +101,11 @@ def print_match(tree, xpath, module):
     match_str = json.dumps(match_xpaths)
     msg = "selector '%s' match: %s" % (xpath, match_str)
     finish(tree, xpath, module, changed=False, msg=msg)
+
+def count(tree, xpath, module):
+    """ Return the count of nodes matching the xpath """
+    hits = tree.xpath("count(/%s)" % xpath)
+    finish(tree, xpath, module, changed=False, msg=int(hits), hitcount=int(hits))
 
 def is_node(tree, xpath):
     """ Test if a given xpath matches anything and if that match is a node.
@@ -188,32 +206,36 @@ def children_to_nodes(children=[], module=None):
 def abort(msg, m):
     m.fail_json(msg=msg)
 
-def finish(tree, xpath, m, changed=False, msg=""):
+def finish(tree, xpath, m, changed=False, msg="", hitcount=0):
     if changed:
         tree.write(m.params['file'], xml_declaration=True, encoding='UTF-8')
-    m.exit_json(changed=changed,actions={"xpath": xpath, "ensure": m.params['ensure']}, msg=msg)
+    m.exit_json(changed=changed,actions={"xpath": xpath, "ensure": m.params['ensure']}, msg=msg, count=hitcount)
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            file=dict(required=True),
+            file=dict(required=False, default=None),
+            xmlstring=dict(required=False, default=None),
             xpath=dict(required=False, default='/'),
             ensure=dict(required=False, default='present', choices=['absent', 'present']),
             value=dict(required=False, default=None),
             attribute=dict(required=False, default=None),
             add_children=dict(required=False, default=None),
             set_children=dict(required=False, default=None),
+            count=dict(required=False, default=None, type='bool'),
             print_match=dict(required=False, default=None, type='bool')
         ),
         supports_check_mode=True,
         mutually_exclusive = [
             ['value','set_children'],
             ['value','add_children'],
-            ['set_children', 'add_children']
+            ['set_children', 'add_children'],
+            ['file', 'xmlstring']
         ]
     )
 
     xml_file = module.params['file']
+    xml_string = module.params['xmlstring']
     xpath = module.params['xpath']
     ensure = module.params['ensure']
     value = module.params['value']
@@ -224,21 +246,28 @@ def main():
     ##################################################################
     # Check if the file exists
     # No: abort
-    if not os.path.isfile(xml_file):
-        module.fail_json(
-            msg="The target XML file does not exist: %s" %
-            xml_file)
+    if xml_string:
+        infile = BytesIO(xml_string.encode('utf-8'))
+    elif os.path.isfile(xml_file):
+        infile = file(xml_file, 'r')
     else:
-        # Try to parse in the target XML file
-        try:
-            x = etree.parse(file(xml_file, 'r'))
-        except etree.XMLSyntaxError, e:
-            module.fail_json(
-                msg="Error while parsing file: %s" %
-                str(e))
+        module.fail_json(
+            msg="The target XML source does not exist: %s" %
+            xml_file)
+
+    # Try to parse in the target XML file
+    try:
+        x = etree.parse(infile)
+    except etree.XMLSyntaxError, e:
+        module.fail_json(
+            msg="Error while parsing file: %s" %
+            str(e))
 
     if module.params['print_match']:
         print_match(x, xpath, module)
+
+    if module.params['count']:
+        count(x, xpath, module)
 
     # module.fail_json(msg="OK. Well, etree parsed the xml file...")
 

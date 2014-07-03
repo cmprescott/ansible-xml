@@ -22,6 +22,12 @@ xml: file=/foo/bar.xml xpath=/business/rating/@subjective ensure=absent
 # Set the rating to 11
 xml: file=/foo/bar.xml xpath=/business/rating value=11
 
+# Get count of beers nodes
+xml: file=/foo/bar.xml xpath=/business/beers count=true
+  register: hits
+
+debug: var=hits.count
+
 # Add a phonenumber element to the business element
 # Implicit 'mkdir -p' behavior where applicable (parent xml nodes created automatically)
 xml: file=/foo/bar.xml xpath=/business/phonenumber value=555-555-1234
