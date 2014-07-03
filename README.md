@@ -1,7 +1,7 @@
 # ansible-xml
 
-[Ansible](http://www.ansible.com/home) module for manipulating bits
-and pieces of XML files and strings.
+[Ansible](https://github.com/ansible/ansible) module for manipulating
+bits and pieces of XML files and strings.
 
 
 # Notes
