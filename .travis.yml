@@ -3,8 +3,10 @@ language: python
 python: "2.7"
 
 before_install:
+  - sudo apt-get install python-lxml
   # Make sure everything's up to date.
   - sudo apt-get update -qq
+
 
 install:
   # Install Ansible.
