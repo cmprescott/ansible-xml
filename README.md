@@ -19,10 +19,7 @@ document. The node is selected by following a path or steps."
 Basically, it's a syntax which allows you to select a specific, or
 collection, of elements or attributes in an XML file.
 
-**Tutorials**
-
-* [w3cschools #1](http://www.w3schools.com/xpath/xpath_syntax.asp)
-* [w3cschools #2](http://www.w3schools.com/XPath/)
+[Learn more at the Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/XPath)
 
 
 # Examples
