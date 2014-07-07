@@ -11,7 +11,7 @@
         command: rm -f /tmp/foo2.xml
 
       - name: Copy in the example XML file
-        command: cp /tmp/foo.xml /tmp/foo2.xml
+        command: cp foo.xml /tmp/foo2.xml
 
       - name: Verify task requires a valid 'file' attribute
         xml: xpath=/ file=/klfj/dlfjkldf/sojfkljf.xml
