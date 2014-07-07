@@ -23,7 +23,7 @@
       - name: Verify that Ansible detects mutually exclusive attributes (children & value)
         xml:
             file: /tmp/foo2.xml
-            children:
+            add_children:
                 - child01
                 - child02
             value: conflict!
@@ -33,20 +33,20 @@
         xml:
             file: /tmp/foo2.xml
             xpath: /business
-            children:
+            add_children:
                 - badbeers
 
       - name: Add several more (bad) beers to the beers element, assuming a group_vars file with a 'bad_beers' variable in it
         xml:
             file: /tmp/foo2.xml
             xpath: /business/beers
-            children: "{{ bad_beers }}"
+            add_children: "{{ bad_beers }}"
 
       - name: Add several more (bad) beers to the beers element
         xml:
           file: /tmp/foo2.xml
           xpath: /business/beers
-          children:
+          add_children:
             - beer: "Old Rasputin"
             - beer: "Old Motor Oil"
             - beer: "Old Curmudgeon"
