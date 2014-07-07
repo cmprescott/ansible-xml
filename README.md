@@ -80,14 +80,14 @@ file with:
 
 Then the playbook syntax would look like this:
 
-    xml: file=/foo/bar.xml xpath=/business/beers children={{ new_beers }}
+    xml: file=/foo/bar.xml xpath=/business/beers children_add={{ new_beers }}
 
 The same, but do it inline
 
 	xml:
 	  file: /foo/bar.xml
 	  xpath: /business/beers
-	  children:
+	  children_add:
 		  - beer: "Old Rasputin"
 		  - beer: "Old Motor Oil"
 		  - beer: "Old Curmudgeon"
