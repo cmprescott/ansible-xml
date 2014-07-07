@@ -4,6 +4,10 @@
 [Ansible](https://github.com/ansible/ansible) module for manipulating
 bits and pieces of XML files and strings.
 
+# Requirements
+
+* Pythons bindings to libxml (usually in a package called python-lxml, install with ```sudo apt-get install python-lxml```).
+
 
 # Notes
 
