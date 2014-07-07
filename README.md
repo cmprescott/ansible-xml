@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/relaxnow/ansible-xml.svg?branch=master)](https://travis-ci.org/relaxnow/ansible-xml)
 # ansible-xml
 
 [Ansible](https://github.com/ansible/ansible) module for manipulating
