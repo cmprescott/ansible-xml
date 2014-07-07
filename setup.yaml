@@ -1,5 +1,0 @@
----
-- name: Clean out modified xml file
-  command: rm -f /tmp/foo2.xml
-- name: Copy in the example XML file
-  command: cp /tmp/foo.xml /tmp/foo2.xml
