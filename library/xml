@@ -192,9 +192,13 @@ def child_to_element(child, module):
     elif ch_type == dict:
         if len(child) > 1:
             abort("Can only create children from hashes with one key", module)
+
         (key, value) = child.items()[0]
-        node = etree.Element(key)
-        node.text = value
+        if type(value) == dict:
+            node = etree.Element(key, value)
+        else:
+            node = etree.Element(key)
+            node.text = value
         return node
     else:
         abort("Invalid child type: %s. Children must be either strings or hashes." % str(ch_type), module)
