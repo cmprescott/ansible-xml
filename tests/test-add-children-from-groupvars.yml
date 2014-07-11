@@ -1,0 +1,12 @@
+---
+  - name: Setup test fixture
+    command: cp fixtures/ansible-xml-beers.xml /tmp/ansible-xml-beers.xml
+
+  - name: Add child element
+    xml:
+      file: /tmp/ansible-xml-beers.xml
+      xpath: /business/beers
+      add_children: "{{ bad_beers }}"
+
+  - name: Test expected result
+    command: diff results/test-add-children-from-groupvars.xml /tmp/ansible-xml-beers.xml

@@ -6,44 +6,14 @@
   roles:
     - { role: ansible-xml }
 
-  post_tasks:
-      - name: Setup test fixture
-        command: cp fixtures/ansible-xml-beers.xml /tmp/ansible-xml-beers.xml
-
-      - name: Verify the module removes the 'rating' node
-        xml: file=/tmp/ansible-xml-beers.xml xpath=/business/rating ensure=absent
-
-      - name: Verify that Ansible detects mutually exclusive attributes (children & value)
-        xml:
-            file: /tmp/ansible-xml-beers.xml
-            add_children:
-                - child01
-                - child02
-            value: conflict!
-        ignore_errors: yes
-
-      - name: Add a badbeers element
-        xml:
-            file: /tmp/ansible-xml-beers.xml
-            xpath: /business
-            add_children:
-                - badbeers
-                - nodeName: nodeValue
-                - nodeName:
-                    attribute: attributeValue
-                    __v: nodeValue
-
-      - name: Add several more (bad) beers to the beers element, assuming a group_vars file with a 'bad_beers' variable in it
-        xml:
-            file: /tmp/ansible-xml-beers.xml
-            xpath: /business/beers
-            add_children: "{{ bad_beers }}"
-
-      - name: Add several more (bad) beers to the beers element
-        xml:
-          file: /tmp/ansible-xml-beers.xml
-          xpath: /business/beers
-          add_children:
-            - beer: "Old Rasputin"
-            - beer: "Old Motor Oil"
-            - beer: "Old Curmudgeon"
+  tasks:
+      - include: test-add-children-elements.yml
+      - include: test-add-children-from-groupvars.yml
+      - include: test-add-children-with-attributes.yml
+      - include: test-count.yml
+      - include: test-mutually-exclusive-attributes.yml
+      # @todo removal of attributes is broken?
+#      - include: test-remove-attribute.yml
+      - include: test-remove-element.yml
+      - include: test-set-attribute-value.yml
+      - include: test-set-element-value.yml

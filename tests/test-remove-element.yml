@@ -1,0 +1,12 @@
+---
+  - name: Setup test fixture
+    command: cp fixtures/ansible-xml-beers.xml /tmp/ansible-xml-beers.xml
+
+  - name: Remove '/business/rating'
+    xml:
+      file: /tmp/ansible-xml-beers.xml
+      xpath: /business/rating
+      ensure: absent
+
+  - name: Test expected result
+    command: diff results/test-remove-element.xml /tmp/ansible-xml-beers.xml

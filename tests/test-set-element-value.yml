@@ -1,0 +1,13 @@
+---
+  - name: Setup test fixture
+    command: cp fixtures/ansible-xml-beers.xml /tmp/ansible-xml-beers.xml
+
+  - name: Set '/business/rating' to 'false'
+    xml:
+      file: /tmp/ansible-xml-beers.xml
+      xpath: /business/rating
+      value: "11"
+
+  - name: Test expected result
+    command: diff results/test-set-element-value.xml /tmp/ansible-xml-beers.xml
+    changed_when: False
