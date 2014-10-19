@@ -6,15 +6,16 @@ bits and pieces of XML files and strings.
 
 # Requirements
 
-* Pythons bindings to libxml (usually in a package called python-lxml, install with ```sudo apt-get install python-lxml```).
+* Pythons bindings to ``libxml`` (usually in a package called
+  ``python-lxml``, install with ``sudo apt-get install python-lxml``
+  or ``sudo yum install python-lxml``).
 
 
 # Notes
 
-* This module is not 100% complete. No promises of support are made.
 * **Pull requests are welcome!**
 * This software is available under the terms of the GPLv2 license.
-
+* Hi there, we have unit tests!
 
 # What is XPath?
 
@@ -25,6 +26,15 @@ Basically, it's a syntax which allows you to select a specific, or
 collection, of elements or attributes in an XML file.
 
 [Learn more at the Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/XPath)
+
+
+# Unittests
+
+Also included in this repository are
+[Unittests](https://github.com/RHInception/ansible-xml/tree/master/tests). Reference
+these, in addition to the
+[Travis-CI](https://github.com/RHInception/ansible-xml/blob/master/.travis.yml)
+configuration, if you need some more examples.
 
 
 # Examples
