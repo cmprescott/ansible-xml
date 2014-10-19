@@ -120,12 +120,13 @@ def is_node(tree, xpath):
     return False
 
 def is_attribute(tree, xpath):
-    """ Test if a given xpath matches and that match is an attribute """
+    """ Test if a given xpath matches and that match is an attribute
+
+An xpath attribute search will only match one item"""
     if xpath_matches(tree, xpath):
         match = tree.xpath(xpath)
         if type(match[0]) == lxml.etree._ElementStringResult:
             return True
-
     return False
 
 def xpath_matches(tree, xpath):
@@ -136,11 +137,23 @@ def xpath_matches(tree, xpath):
         return False
 
 def delete_xpath_target(tree, xpath, module):
+    """ Delete an attribute or element from a tree """
     try:
-        for node in tree.xpath(xpath):
-            if not module.check_mode: node.getparent().remove(node)
-    except:
-        abort("Couldn't delete xpath target: %s" % xpath, module)
+        for result in tree.xpath(xpath):
+            if not module.check_mode:
+                # Get the xpath for this result
+                if is_attribute(tree, xpath):
+                    # Delete an attribute
+                    parent = result.getparent()
+                    # Pop this attribute match out of the parent
+                    # node's 'attrib' dict by using this match's
+                    # 'attrname' attribute for the key
+                    parent.attrib.pop(result.attrname)
+                elif is_node(tree, xpath):
+                    # Delete an element
+                    result.getparent().remove(result)
+    except Exception, e:
+        abort("Couldn't delete xpath target: %s (%s)" % (xpath, str(e)), module)
     else:
         finish(tree, xpath, module, changed=True)
 

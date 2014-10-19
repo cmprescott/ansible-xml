@@ -67,7 +67,7 @@ Set the rating to **11**
 
 Get count of beers nodes
 
-    xml: file=/foo/bar.xml xpath=/business/beers count=true
+    xml: file=/foo/bar.xml xpath=/business/beers/beer count=true
       register: hits
 
     debug: var=hits.count
@@ -90,14 +90,14 @@ file with:
 
 Then the playbook syntax would look like this:
 
-    xml: file=/foo/bar.xml xpath=/business/beers children_add={{ new_beers }}
+    xml: file=/foo/bar.xml xpath=/business/beers add_children={{ new_beers }}
 
 The same, but do it inline
 
     xml:
       file: /foo/bar.xml
       xpath: /business/beers
-      children_add:
+      add_children:
           - beer: "Old Rasputin"
           - beer: "Old Motor Oil"
           - beer: "Old Curmudgeon"
