@@ -5,7 +5,7 @@
     <beer>Rochefort 10</beer>
     <beer>St. Bernardus Abbot 12</beer>
     <beer>Schlitz</beer>
-  </beers>
+  <beer>Natty Lite</beer><beer>Miller Lite</beer><beer>Coors Lite</beer></beers>
   <rating subjective="true">10</rating>
   <website>
     <mobilefriendly/>

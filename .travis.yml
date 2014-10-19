@@ -7,7 +7,6 @@ before_install:
   # Make sure everything's up to date.
   - sudo apt-get update -qq
 
-
 install:
   # Install Ansible.
   - pip install ansible
@@ -16,26 +15,5 @@ script:
   # Check the role/playbook's syntax.
   - ansible-playbook -i tests/inventory tests/test.yml --syntax-check
 
-  # Run the "require valid file" playbook which should fail.
-  - "! ansible-playbook -i tests/inventory tests/test-require-valid-file.yml --connection=local --sudo"
-
-  # Run the "Insert a new host in Tomcat" playbook which should succeed.
-  - "ansible-playbook -i tests/inventory tests/test-tomcat-server-xml.yml --connection=local --sudo"
-
-  # Run the role/playbook again, checking to make sure it's idempotent.
-  - >
-    ansible-playbook -i tests/inventory tests/test-tomcat-server-xml.yml --connection=local --sudo -e 'setup=false'
-    | grep -q 'changed=0.*failed=0'
-    && (echo 'Idempotence test: pass' && exit 0)
-    || (echo 'Idempotence test: fail' && exit 1)
-
   # Run the miscellaneous tests.
-  - "ansible-playbook -i tests/inventory tests/test.yml --connection=local --sudo"
-
-  # Run the role/playbook again, checking to make sure it's idempotent.
-  # TODO: Test is not currently idempotent
-#  - >
-#    ansible-playbook -i tests/inventory tests/test.yml --connection=local --sudo
-#    | grep -q 'changed=0.*failed=0'
-#    && (echo 'Idempotence test: pass' && exit 0)
-#    || (echo 'Idempotence test: fail' && exit 1)
+  - "ansible-playbook -i tests/inventory tests/test.yml"

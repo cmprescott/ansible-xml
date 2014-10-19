@@ -174,16 +174,22 @@ def add_target_children(tree, xpath, children, module):
     else:
         finish(tree, xpath, module)
 
-def set_target_attribute(tree, xpath, attribute, value, module):
+def set_target(tree, xpath, attribute, value, module):
     changed = False
 
-    if is_node(tree, xpath):
-        for element in tree.xpath(xpath):
+    if not is_node(tree, xpath):
+        abort("Xpath " + xpath + " does not reference a node!")
+
+    for element in tree.xpath(xpath):
+        if not attribute:
+            element.text = value
+            changed = True
+        else:
             if (element.get(attribute) != value):
                 if not module.check_mode: element.set(attribute, value)
                 changed = True
 
-    finish(tree, xpath, module, changed=changed)
+    finish(tree, xpath, module, changed)
 
 def child_to_element(child, module):
     ch_type = type(child)
@@ -312,7 +318,7 @@ def main():
     # Is the xpath target an attribute selector?
     # Yes: Set the attribute, exit
     if module.params['value']:
-        set_target_attribute(x, xpath, attribute, value, module)
+        set_target(x, xpath, attribute, value, module)
 
 ######################################################################
 from ansible.module_utils.basic import *

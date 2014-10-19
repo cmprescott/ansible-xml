@@ -31,20 +31,20 @@ collection, of elements or attributes in an XML file.
 
 Given:
 
-	<?xml version='1.0' encoding='UTF-8'?>
-	<business type="bar">
-		<name>Tasty Beverage Co.</name>
-		<beers>
-			<beer>Rochefort 10</beer>
-			<beer>St. Bernardus Abbot 12</beer>
-			<beer>Schlitz</beer>
-		</beers>
-		<rating subjective="true">10</rating>
-		<website>
-			<mobilefriendly />
-			<address>http://tastybeverageco.com</address>
-		</website>
-	</business>
+    <?xml version='1.0' encoding='UTF-8'?>
+    <business type="bar">
+        <name>Tasty Beverage Co.</name>
+        <beers>
+            <beer>Rochefort 10</beer>
+            <beer>St. Bernardus Abbot 12</beer>
+            <beer>Schlitz</beer>
+        </beers>
+        <rating subjective="true">10</rating>
+        <website>
+            <mobilefriendly />
+            <address>http://tastybeverageco.com</address>
+        </website>
+    </business>
 
 
 Remove the ``subjective`` attribute of the rating element:
@@ -57,10 +57,10 @@ Set the rating to **11**
 
 Get count of beers nodes
 
-	xml: file=/foo/bar.xml xpath=/business/beers count=true
-	  register: hits
+    xml: file=/foo/bar.xml xpath=/business/beers count=true
+      register: hits
 
-	debug: var=hits.count
+    debug: var=hits.count
 
 
 
@@ -84,13 +84,13 @@ Then the playbook syntax would look like this:
 
 The same, but do it inline
 
-	xml:
-	  file: /foo/bar.xml
-	  xpath: /business/beers
-	  children_add:
-		  - beer: "Old Rasputin"
-		  - beer: "Old Motor Oil"
-		  - beer: "Old Curmudgeon"
+    xml:
+      file: /foo/bar.xml
+      xpath: /business/beers
+      children_add:
+          - beer: "Old Rasputin"
+          - beer: "Old Motor Oil"
+          - beer: "Old Curmudgeon"
 
 Add a ``validxhtml`` element to the ``website`` element. Note that
 ``ensure`` is ``present`` by default, and ``value`` defaults to
@@ -112,10 +112,10 @@ implicit parent-node creation behavior. The result is something like
 
 (2/2) Remove all children from the website element:
 
-	xml:
-	  file: /foo/bar.xml
-	  xpath: /business/website
-	  children: []
+    xml:
+      file: /foo/bar.xml
+      xpath: /business/website
+      children: []
 
 
 Question? If You have ``<beers><child01 /><child02 /></beers>``
