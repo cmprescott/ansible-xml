@@ -191,7 +191,7 @@ def set_target(tree, xpath, attribute, value, module):
     changed = False
 
     if not is_node(tree, xpath):
-        abort("Xpath " + xpath + " does not reference a node!")
+        abort("Xpath " + xpath + " does not reference a node!", module)
 
     for element in tree.xpath(xpath):
         if not attribute:
