@@ -13,7 +13,10 @@ bits and pieces of XML files and strings.
 
 # Notes
 
-* **Pull requests are welcome!**
+## We are giving up ownership of this module. This README will be updated with a notice once a new home is found
+
+# Notes (cont...)
+
 * This software is available under the terms of the GPLv2 license.
 * Hi there, we have unit tests!
 
