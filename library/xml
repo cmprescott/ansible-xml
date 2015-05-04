@@ -237,7 +237,8 @@ def abort(msg, m):
 
 def finish(tree, xpath, m, changed=False, msg="", hitcount=0):
     if changed:
-        tree.write(m.params['file'], xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
+        xml_file = os.path.expanduser(m.params['file'])
+        tree.write(xml_file, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
     m.exit_json(changed=changed,actions={"xpath": xpath, "ensure": m.params['ensure']}, msg=msg, count=hitcount)
 
 def main():
@@ -264,7 +265,7 @@ def main():
         ]
     )
 
-    xml_file = module.params['file']
+    xml_file = os.path.expanduser(module.params['file'])
     xml_string = module.params['xmlstring']
     xpath = module.params['xpath']
     ensure = module.params['ensure']
