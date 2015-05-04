@@ -78,6 +78,12 @@ options:
     required: false
     default: null
     choices: []
+  pretty_print:
+    description:
+      - "Pretty print output XML"
+    required: false
+    default: false
+    choices: []
 requirements:
     - The remote end must have the Python C(lxml) library installed
 author: Tim Bielawa, Magnus Hedemark
@@ -231,7 +237,7 @@ def abort(msg, m):
 
 def finish(tree, xpath, m, changed=False, msg="", hitcount=0):
     if changed:
-        tree.write(m.params['file'], xml_declaration=True, encoding='UTF-8')
+        tree.write(m.params['file'], xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
     m.exit_json(changed=changed,actions={"xpath": xpath, "ensure": m.params['ensure']}, msg=msg, count=hitcount)
 
 def main():
@@ -246,7 +252,8 @@ def main():
             add_children=dict(required=False, default=None),
             set_children=dict(required=False, default=None),
             count=dict(required=False, default=None, type='bool'),
-            print_match=dict(required=False, default=None, type='bool')
+            print_match=dict(required=False, default=None, type='bool'),
+            pretty_print=dict(required=False, defualt=False, type='bool')
         ),
         supports_check_mode=True,
         mutually_exclusive = [
@@ -265,6 +272,7 @@ def main():
     attribute = module.params['attribute']
     set_children = module.params['set_children']
     add_children = module.params['add_children']
+    pretty_print = module.params['pretty_print']
 
     ##################################################################
     # Check if the file exists
@@ -280,7 +288,8 @@ def main():
 
     # Try to parse in the target XML file
     try:
-        x = etree.parse(infile)
+        parser = etree.XMLParser(remove_blank_text=pretty_print)
+        x = etree.parse(infile, parser)
     except etree.XMLSyntaxError, e:
         module.fail_json(
             msg="Error while parsing file: %s" %
