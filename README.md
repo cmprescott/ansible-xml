@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/RHInception/ansible-xml.svg?branch=master)](https://travis-ci.org/RHInception/ansible-xml)
+[![Build Status][travis_badge]][travis_results]
 # ansible-xml
 
-[Ansible](https://github.com/ansible/ansible) module for manipulating
+[Ansible][src_ansible] module for manipulating
 bits and pieces of XML files and strings.
 
 # Requirements
@@ -28,16 +28,14 @@ document. The node is selected by following a path or steps."
 Basically, it's a syntax which allows you to select a specific, or
 collection, of elements or attributes in an XML file.
 
-[Learn more at the Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/XPath)
+[Learn more at the Mozilla Developer Network][doc_xpath]
 
 
 # Unittests
 
 Also included in this repository are
-[Unittests](https://github.com/RHInception/ansible-xml/tree/master/tests). Reference
-these, in addition to the
-[Travis-CI](https://github.com/RHInception/ansible-xml/blob/master/.travis.yml)
-configuration, if you need some more examples.
+[Unittests][src_this_unittests]. Reference these, in addition to the
+[Travis-CI][src_this_travis] configuration, if you need some more examples.
 
 
 # Examples
@@ -139,3 +137,10 @@ What happens if you say:
 
 ``value`` defaults to an element, so then this would erase the
 children elements.
+
+[doc_xpath]: https://developer.mozilla.org/en-US/docs/Web/XPath
+[src_ansible]: https://github.com/ansible/ansible
+[src_this_travis]: https://github.com/RHInception/ansible-xml/blob/master/.travis.yml
+[src_this_unittests]: https://github.com/RHInception/ansible-xml/tree/master/tests
+[travis_badge]: https://travis-ci.org/RHInception/ansible-xml.svg?branch=master
+[travis_results]: https://travis-ci.org/RHInception/ansible-xml
