@@ -140,7 +140,7 @@ children elements.
 
 [doc_xpath]: https://developer.mozilla.org/en-US/docs/Web/XPath
 [src_ansible]: https://github.com/ansible/ansible
-[src_this_travis]: https://github.com/RHInception/ansible-xml/blob/master/.travis.yml
-[src_this_unittests]: https://github.com/RHInception/ansible-xml/tree/master/tests
-[travis_badge]: https://travis-ci.org/RHInception/ansible-xml.svg?branch=master
-[travis_results]: https://travis-ci.org/RHInception/ansible-xml
+[src_this_travis]: https://github.com/cmprescott/ansible-xml/blob/master/.travis.yml
+[src_this_unittests]: https://github.com/cmprescott/ansible-xml/tree/master/tests
+[travis_badge]: https://travis-ci.org/cmprescott/ansible-xml.svg?branch=master
+[travis_results]: https://travis-ci.org/cmprescott/ansible-xml
