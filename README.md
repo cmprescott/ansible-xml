@@ -13,10 +13,8 @@ bits and pieces of XML files and strings.
 
 # Notes
 
-## We are giving up ownership of this module. This README will be updated with a notice once a new home is found
-
-# Notes (cont...)
-
+* Original module created by [@github_rhinception][github_team_rhinception].
+* On 2015-05-05, [@tbielawa][github_user_tbielawa] transferred the project over to [@cmprescott][github_user_cmprescott] to resolve [issue #16][github_issue_16].
 * This software is available under the terms of the GPLv2 license.
 * Hi there, we have unit tests!
 
@@ -139,6 +137,10 @@ What happens if you say:
 children elements.
 
 [doc_xpath]: https://developer.mozilla.org/en-US/docs/Web/XPath
+[github_issue_16]: https://github.com/cmprescott/ansible-xml/issues/16
+[github_user_cmprescott]: https://github.com/cmprescott
+[github_user_tbielawa]: https://github.com/tbielawa
+[github_team_rhinception]: https://github.com/RHInception
 [src_ansible]: https://github.com/ansible/ansible
 [src_this_travis]: https://github.com/cmprescott/ansible-xml/blob/master/.travis.yml
 [src_this_unittests]: https://github.com/cmprescott/ansible-xml/tree/master/tests
