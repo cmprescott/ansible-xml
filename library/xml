@@ -201,12 +201,11 @@ def set_target(tree, xpath, attribute, value, module):
 
     for element in tree.xpath(xpath):
         if not attribute:
-            element.text = value
-            changed = True
+            changed = (element.text != value)
+            if not module.check_mode and changed: element.text = value
         else:
-            if (element.get(attribute) != value):
-                if not module.check_mode: element.set(attribute, value)
-                changed = True
+            changed = (element.get(attribute) != value)
+            if not module.check_mode and changed: element.set(attribute, value)
 
     finish(tree, xpath, module, changed)
 
