@@ -7,7 +7,22 @@
       file: /tmp/ansible-xml-beers.xml
       xpath: /business/rating
       value: "11"
+    register: set_element_first_run
+
+  - name: Set '/business/rating' to 'false'... again
+    xml:
+      file: /tmp/ansible-xml-beers.xml
+      xpath: /business/rating
+      value: "11"
+    register: set_element_second_run
 
   - name: Test expected result
     command: diff results/test-set-element-value.xml /tmp/ansible-xml-beers.xml
     changed_when: False
+
+  - name: Test registered 'changed' on run 1 and unchanged on run 2
+    assert:
+      that:
+        - set_element_first_run.changed
+        - not set_element_second_run.changed
+...
