@@ -1,0 +1,19 @@
+---
+  - name: Setup test fixture
+    command: cp fixtures/ansible-xml-namespaced-beers.xml /tmp/ansible-xml-namespaced-beers.xml
+
+  - name: Set namespaced '/bus:business/rat:rating/@attr:subjective' to 'false'
+    xml:
+      file: /tmp/ansible-xml-namespaced-beers.xml
+      xpath: /bus:business/rat:rating
+      namespaces:
+        bus: http://test.business
+        ber: http://test.beers
+        rat: http://test.rating
+        attr: http://test.attribute
+      attribute: attr:subjective
+      value: "false"
+
+  - name: Test expected result
+    command: diff results/test-set-namespaced-attribute-value.xml /tmp/ansible-xml-namespaced-beers.xml
+    changed_when: False
