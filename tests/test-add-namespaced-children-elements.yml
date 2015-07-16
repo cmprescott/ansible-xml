@@ -1,0 +1,16 @@
+---
+  - name: Setup test fixture
+    command: cp fixtures/ansible-xml-namespaced-beers.xml /tmp/ansible-xml-namespaced-beers.xml
+
+  - name: Add namespaced child element
+    xml:
+      file: /tmp/ansible-xml-namespaced-beers.xml
+      xpath: /bus:business/ber:beers
+      namespaces:
+        bus: http://test.business
+        ber: http://test.beers
+      add_children:
+        - beer: "Old Rasputin"
+
+  - name: Test expected result
+    command: diff results/test-add-namespaced-children-elements.xml /tmp/ansible-xml-namespaced-beers.xml
