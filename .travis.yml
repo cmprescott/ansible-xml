@@ -3,17 +3,26 @@ language: python
 python: "2.7"
 
 before_install:
-  - sudo apt-get install python-lxml
+  # install libxml dependency binaries
+  - sudo apt-get install libxml2 libxml2-dev libxslt-dev python-dev
+  
+  # build/install current version of libxml
+  - sudo CFLAGS="-O0" pip install lxml --upgrade
+  
   # Make sure everything's up to date.
   - sudo apt-get update -qq
 
 install:
-  # Install Ansible.
+  # build/install current version of Ansible
   - pip install ansible
 
 script:
+  # log version of Ansible
+  - ansible --version
+
   # Check the role/playbook's syntax.
   - ansible-playbook -i tests/inventory tests/test.yml --syntax-check
 
   # Run the miscellaneous tests.
   - "ansible-playbook -i tests/inventory tests/test.yml"
+...
