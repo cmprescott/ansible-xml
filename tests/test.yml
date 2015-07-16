@@ -4,21 +4,21 @@
   remote_user: root
 
   roles:
-    - { role: ansible-xml }
+    - ../..
 
   tasks:
-      - include: test-add-children-elements.yml
-      - include: test-add-children-from-groupvars.yml
-      - include: test-add-children-with-attributes.yml
-      - include: test-count.yml
-      - include: test-mutually-exclusive-attributes.yml
-      # @todo removal of attributes is broken?
-      - include: test-remove-attribute.yml
-      - include: test-remove-element.yml
-      - include: test-set-attribute-value.yml
-      - include: test-set-element-value.yml
-      - include: test-pretty-print.yml
-      - include: test-add-namespaced-children-elements.yml
-      - include: test-remove-namespaced-attribute.yml
-      - include: test-set-namespaced-attribute-value.yml
-      - include: test-set-namespaced-element-value.yml
+    - include: test-add-children-elements.yml
+    - include: test-add-children-from-groupvars.yml
+    - include: test-add-children-with-attributes.yml
+    - include: test-count.yml
+    - include: test-mutually-exclusive-attributes.yml
+    - include: test-remove-attribute.yml
+    - include: test-remove-element.yml
+    - include: test-set-attribute-value.yml
+    - include: test-set-element-value.yml
+    - include: test-pretty-print.yml
+    - include: test-add-namespaced-children-elements.yml
+    - include: test-remove-namespaced-attribute.yml
+    - include: test-set-namespaced-attribute-value.yml
+    - include: test-set-namespaced-element-value.yml
+...

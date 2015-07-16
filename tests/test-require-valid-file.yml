@@ -4,11 +4,12 @@
   remote_user: root
 
   roles:
-    - { role: ansible-xml }
+    - ../..
 
   post_tasks:
-      - name: Setup test fixture
-        command: cp fixtures/ansible-xml-beers.xml /tmp/ansible-xml-beers.xml
+    - name: Setup test fixture
+      copy: src=fixtures/ansible-xml-beers.xml dest=/tmp/ansible-xml-beers.xml
 
-      - name: Verify task requires a valid 'file' attribute
-        xml: xpath=/ file=/klfj/dlfjkldf/sojfkljf.xml
+    - name: Verify task requires a valid 'file' attribute
+      xml: xpath=/ file=/klfj/dlfjkldf/sojfkljf.xml
+...
