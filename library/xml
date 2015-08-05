@@ -263,7 +263,7 @@ def main():
             set_children=dict(required=False, default=None),
             count=dict(required=False, default=None, type='bool'),
             print_match=dict(required=False, default=None, type='bool'),
-            pretty_print=dict(required=False, defualt=False, type='bool')
+            pretty_print=dict(required=False, default=False, type='bool')
         ),
         supports_check_mode=True,
         mutually_exclusive = [
