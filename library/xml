@@ -178,25 +178,23 @@ def set_target_children(tree, xpath, namespaces, children, module):
 
     changed = False
 
+    def replace_children_of(match):
+        if not module.check_mode:
+            for element in match.getchildren():
+                match.remove(element)
+            match.extend(children)
+
     # xpaths always return matches as a list, so....
     for match in matches:
-        def replace_children():
-            # First remove any existing children
-            for element in match.getchildren():
-                if not module.check_mode: match.remove(element)
-
-            # Add our new children to the node
-            if not module.check_mode: match.extend(children)
         # Check if elements differ
-        matchChanged = False
         if len(match.getchildren()) == len(children):
             for idx, element in enumerate(match.getchildren()):
                 if lxml.etree.tostring(element) != children_as_string[idx]:
-                    replace_children()
+                    replace_children_of(match)
                     changed = True
                     break
         else:
-            replace_children()
+            replace_children_of(match)
             changed = True
 
     # Write it out
