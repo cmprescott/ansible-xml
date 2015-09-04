@@ -207,14 +207,14 @@ def set_target(tree, xpath, namespaces, attribute, value, module):
 
     for element in tree.xpath(xpath, namespaces=namespaces):
         if not attribute:
-            changed = (element.text != value)
-            if not module.check_mode and changed: element.text = value
+            changed = changed or (element.text != value)
+            if not module.check_mode and (element.text != value): element.text = value
         else:
-            changed = (element.get(attribute) != value)
+            changed = changed or (element.get(attribute) != value)
             if ":" in attribute:
                 attr_ns, attr_name = attribute.split(":")
                 attribute = "{{{0}}}{1}".format(namespaces[attr_ns], attr_name)
-            if not module.check_mode and changed: element.set(attribute, value)
+            if not module.check_mode and (element.get(attribute) != value): element.set(attribute, value)
 
     finish(tree, xpath, namespaces, module, changed)
 
