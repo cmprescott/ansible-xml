@@ -1,6 +1,6 @@
 ---
   - name: Setup test fixture
-    command: cp fixtures/ansible-xml-namespaced-beers.xml /tmp/ansible-xml-namespaced-beers.xml
+    copy: src=fixtures/ansible-xml-namespaced-beers.xml dest=/tmp/ansible-xml-namespaced-beers.xml
 
   - name: Add namespaced child element
     xml:

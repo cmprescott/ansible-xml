@@ -1,6 +1,6 @@
 ---
   - name: Setup test fixture
-    command: cp fixtures/ansible-xml-namespaced-beers.xml /tmp/ansible-xml-namespaced-beers.xml
+    copy: src=fixtures/ansible-xml-namespaced-beers.xml dest=/tmp/ansible-xml-namespaced-beers.xml
 
   - name: Set namespaced '/bus:business/rat:rating/@attr:subjective' to 'false'
     xml:
