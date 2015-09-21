@@ -15,6 +15,7 @@
     - include: test-remove-attribute.yml
     - include: test-remove-element.yml
     - include: test-set-attribute-value.yml
+    - include: test-set-children-elements.yml
     - include: test-set-element-value.yml
     - include: test-pretty-print.yml
     - include: test-add-namespaced-children-elements.yml
