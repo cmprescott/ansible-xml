@@ -6,9 +6,9 @@
     <beer>St. Bernardus Abbot 12</beer>
     <beer>Schlitz</beer>
   </beers>
-  <rating subjective="true">11</rating>
+  <rating subjective="true">5</rating>
   <website>
     <mobilefriendly/>
     <address>http://tastybeverageco.com</address>
   </website>
-</business>
+<rating>5</rating></business>
