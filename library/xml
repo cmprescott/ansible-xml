@@ -90,6 +90,14 @@ options:
     required: false
     default: false
     choices: []
+  content:
+    description:
+      - "Search for a given C(xpath) and get content"
+    required: false
+    default: false
+    choices:
+      - "attribute"
+      - "text"
 requirements:
     - The remote end must have the Python C(lxml) library installed
 author: Tim Bielawa, Magnus Hedemark
@@ -228,6 +236,30 @@ def set_target(tree, xpath, namespaces, attribute, value, module):
 
     finish(tree, xpath, namespaces, module, changed)
 
+def get_element_text(tree, xpath, namespaces, module):
+    if not is_node(tree, xpath, namespaces):
+        abort("Xpath " + xpath + " does not reference a node!", module)
+
+    elements = []
+    for element in tree.xpath(xpath, namespaces=namespaces):
+        elements.append({element.tag: element.text})
+
+    finish(tree, xpath, namespaces, module, changed=False, msg=len(elements), hitcount=len(elements), matches=elements)
+
+def get_element_attr(tree, xpath, namespaces, module):
+    if not is_node(tree, xpath, namespaces):
+        abort("Xpath " + xpath + " does not reference a node!", module)
+
+    elements = []
+    for element in tree.xpath(xpath, namespaces=namespaces):
+        child = {}
+        for key in element.keys():
+            value = element.get(key)
+            child.update({key: value})
+        elements.append({element.tag: child})
+
+    finish(tree, xpath, namespaces, module, changed=False, msg=len(elements), hitcount=len(elements), matches=elements)
+
 def child_to_element(child, module):
     ch_type = type(child)
     if ch_type == str or ch_type == unicode:
@@ -253,11 +285,11 @@ def children_to_nodes(children=[], module=None):
 def abort(msg, m):
     m.fail_json(msg=msg)
 
-def finish(tree, xpath, namespaces, m, changed=False, msg="", hitcount=0):
+def finish(tree, xpath, namespaces, m, changed=False, msg="", hitcount=0, matches=[]):
     if changed:
         xml_file = os.path.expanduser(m.params['file'])
         tree.write(xml_file, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
-    m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount)
+    m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
 
 def main():
     module = AnsibleModule(
@@ -273,14 +305,18 @@ def main():
             set_children=dict(required=False, default=None),
             count=dict(required=False, default=None, type='bool'),
             print_match=dict(required=False, default=None, type='bool'),
-            pretty_print=dict(required=False, default=False, type='bool')
+            pretty_print=dict(required=False, default=False, type='bool'),
+            content=dict(required=False, default=None, choices=['attribute', 'text'])
         ),
         supports_check_mode=True,
         mutually_exclusive = [
             ['value','set_children'],
             ['value','add_children'],
             ['set_children', 'add_children'],
-            ['file', 'xmlstring']
+            ['file', 'xmlstring'],
+            ['content','set_children'],
+            ['content','add_children'],
+            ['content','value'],
         ]
     )
 
@@ -294,6 +330,7 @@ def main():
     set_children = module.params['set_children']
     add_children = module.params['add_children']
     pretty_print = module.params['pretty_print']
+    content = module.params['content']
 
     ##################################################################
     # Check if the file exists
@@ -321,6 +358,11 @@ def main():
 
     if module.params['count']:
         count(x, xpath, namespaces, module)
+
+    if content == 'attribute':
+        get_element_attr(x, xpath, namespaces, module)
+    elif module.params['content'] == 'text':
+        get_element_text(x, xpath, namespaces, module)
 
     # module.fail_json(msg="OK. Well, etree parsed the xml file...")
 
