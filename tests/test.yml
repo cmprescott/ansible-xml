@@ -22,4 +22,5 @@
     - include: test-remove-namespaced-attribute.yml
     - include: test-set-namespaced-attribute-value.yml
     - include: test-set-namespaced-element-value.yml
+    - include: test-get-element-content.yml
 ...
