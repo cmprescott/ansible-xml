@@ -4,12 +4,15 @@
 [Ansible][src_ansible] module for manipulating
 bits and pieces of XML files and strings.
 
-# Requirements
+# Installation
 
 * This module requires Python bindings to ``libxml`` version 2.3 or later. This is usually in a package called 
   ``python-lxml``. Install with ``apt-get install python-lxml``, ``yum install python-lxml``, or ``pip install lxml``.
-  or ``sudo yum install python-lxml``).
-
+* This module is **NOT** included with Ansible. Install with ``git clone https://github.com/cmprescott/ansible-xml.git``,
+  or ``ansible-galaxy install cmprescott.xml``. Valid installation paths are 
+  [the playbook's library directory][doc_install_in_playbook], 
+  [the playbook's roles directory and include in the playbook][doc_install_as_role], 
+  or [Ansible's modules path][doc_install_in_path].
 
 # Notes
 
@@ -160,6 +163,9 @@ xml: file=/foo/bar.xml xpath=/beers
 children elements.
 
 [doc_xpath]: https://developer.mozilla.org/en-US/docs/Web/XPath
+[doc_install_as_role]: http://docs.ansible.com/ansible/playbooks_roles.html#embedding-modules-in-roles
+[doc_install_in_path]: http://docs.ansible.com/ansible/developing_modules.html#module-paths
+[doc_install_in_playbook]: http://docs.ansible.com/ansible/playbooks_best_practices.html#bundling-ansible-modules-with-playbooks
 [github_issue_16]: https://github.com/cmprescott/ansible-xml/issues/16
 [github_user_cmprescott]: https://github.com/cmprescott
 [github_user_tbielawa]: https://github.com/tbielawa
