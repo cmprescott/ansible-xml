@@ -6,8 +6,8 @@ bits and pieces of XML files and strings.
 
 # Requirements
 
-* Pythons bindings to ``libxml`` (usually in a package called
-  ``python-lxml``, install with ``sudo apt-get install python-lxml``
+* This module requires Python bindings to ``libxml`` version 2.3 or later. This is usually in a package called 
+  ``python-lxml``. Install with ``apt-get install python-lxml``, ``yum install python-lxml``, or ``pip install lxml``.
   or ``sudo yum install python-lxml``).
 
 
