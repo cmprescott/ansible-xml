@@ -21,10 +21,10 @@ Ansible module for manipulating bits and pieces of XML files and strings
 
 %install
 %{__mkdir_p} %buildroot%{ansible_lib}
-%{__install} -m 644 library/xml %buildroot%{ansible_lib}
+%{__install} -m 644 library/xml %buildroot%{ansible_lib}/xml
 
 %files
-%{ansible_lib}
+%{ansible_lib}/xml
 
 %clean
 %{__rm} -rf %_buildrootdir
