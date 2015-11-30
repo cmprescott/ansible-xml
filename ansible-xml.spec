@@ -11,3 +11,16 @@ Requires: python-lxml >= 2.3
 Source: https://github.com/cmprescott/%name/archive/%version.tar.gz
 
 %define ansible_lib %{_datarootdir}/ansible
+
+%prep
+%setup
+
+%install
+%{__mkdir_p} %buildroot%{ansible_lib}
+%{__install} -m 644 library/xml %buildroot%{ansible_lib}
+
+%files
+%{ansible_lib}
+
+%clean
+%{__rm} -rf %_buildrootdir
