@@ -9,7 +9,7 @@ URL: https://github.com/cmprescott/ansible-xml
 Packager: Styopa Semenukha <semenukha@gmail.com>
 
 Requires: python-lxml >= 2.3
-Source: https://github.com/cmprescott/%name/archive/%name-%version.tar.gz
+Source: https://github.com/cmprescott/%name/archive/%version.tar.gz
 
 %bcond_with docs
 
