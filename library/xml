@@ -291,6 +291,20 @@ def finish(tree, xpath, namespaces, m, changed=False, msg="", hitcount=0, matche
         tree.write(xml_file, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
     m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
 
+def decode(value):
+    # Convert value to unicode to use with lxml
+    if not value or isinstance(value, unicode):
+        return value
+    elif isinstance(value, str):
+        return value.decode('utf-8')
+    elif isinstance(value, list):
+        return [decode(v) for v in value]
+    elif isinstance(value, dict):
+        return dict((key, decode(val)) for key, val in value.iteritems())
+    else:
+        raise AttributeError('Undecodable value: type=%s, value=%s' %
+                             (type(value), value))
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -325,10 +339,10 @@ def main():
     xpath = module.params['xpath']
     namespaces = module.params['namespaces']
     ensure = module.params['ensure']
-    value = module.params['value']
+    value = decode(module.params['value'])
     attribute = module.params['attribute']
-    set_children = module.params['set_children']
-    add_children = module.params['add_children']
+    set_children = decode(module.params['set_children'])
+    add_children = decode(module.params['add_children'])
     pretty_print = module.params['pretty_print']
     content = module.params['content']
 
