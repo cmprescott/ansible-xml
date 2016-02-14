@@ -23,4 +23,13 @@
     - include: test-set-namespaced-attribute-value.yml
     - include: test-set-namespaced-element-value.yml
     - include: test-get-element-content.yml
+
+    # Unicode tests
+    - include: test-add-children-elements-unicode.yml
+    - include: test-add-children-with-attributes-unicode.yml
+    - include: test-set-attribute-value-unicode.yml
+    - include: test-count-unicode.yml
+    - include: test-get-element-content.yml
+    - include: test-set-children-elements-unicode.yml
+    - include: test-set-element-value-unicode.yml
 ...
