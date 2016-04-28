@@ -416,7 +416,7 @@ def main():
     ##################################################################
     # Is the xpath target an attribute selector?
     # Yes: Set the attribute, exit
-    if module.params['value']:
+    if module.params['value'] is not None:
         set_target(x, xpath, namespaces, attribute, value, module)
 
 ######################################################################
