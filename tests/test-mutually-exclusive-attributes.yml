@@ -9,5 +9,5 @@
             - child01
             - child02
         value: conflict!
-    # @todo this is exercised but not really tested
-    ignore_errors: true
+    register: module_output
+    failed_when: "module_output.failed == 'false'"
