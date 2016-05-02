@@ -17,6 +17,7 @@
     - include: test-set-attribute-value.yml
     - include: test-set-children-elements.yml
     - include: test-set-element-value.yml
+    - include: test-set-element-value-empty.yml
     - include: test-pretty-print.yml
     - include: test-add-namespaced-children-elements.yml
     - include: test-remove-namespaced-attribute.yml
