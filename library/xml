@@ -308,7 +308,7 @@ def decode(value):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            file=dict(required=False, default=None),
+            file=dict(required=False, default=''),
             xmlstring=dict(required=False, default=None),
             xpath=dict(required=False, default='/'),
             namespaces=dict(required=False, default={}),
