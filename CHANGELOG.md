@@ -4,6 +4,7 @@
 
 ## [0.3.4] - 2010-07-06
 ### Added
+- ability to add/set nested elements
 - xmlstring output variable
 - abort statement at the end to prevent situations with unclear workflow end
 - pretty print only (without modifying the xml)
