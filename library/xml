@@ -236,6 +236,29 @@ def set_target(module, tree, xpath, namespaces, attribute, value):
 
     finish(module, tree, xpath, namespaces, changed)
 
+def pretty(module, tree):
+    xml_string = etree.tostring(tree, xml_declaration=True, encoding='UTF-8', pretty_print=module.params['pretty_print'])
+    changed = False
+
+    if module.params['file']:
+        xml_file = os.path.expanduser(module.params['file'])
+
+        xml_content = open(xml_file)
+        try:
+            if xml_string != xml_content.read():
+                changed = True
+                tree.write(xml_file, xml_declaration=True, encoding='UTF-8', pretty_print=module.params['pretty_print'])
+        finally:
+            xml_content.close()
+
+        module.exit_json(changed=changed)
+
+    if module.params['xmlstring']:
+        if xml_string != module.params['xmlstring']:
+            changed = True
+
+        module.exit_json(changed=changed, xmlstring=xml_string)
+
 def get_element_text(module, tree, xpath, namespaces):
     if not is_node(tree, xpath, namespaces):
         abort(module, "Xpath " + xpath + " does not reference a node!")
@@ -293,9 +316,10 @@ def finish(m, tree, xpath, namespaces, changed=False, msg="", hitcount=0, matche
         xml_file = os.path.expanduser(m.params['file'])
         tree.write(xml_file, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
         m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
+
     if m.params['xmlstring']:
-        xmlstring = etree.tostring(tree, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
-        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches, xmlstring=xmlstring)
+        xml_string = etree.tostring(tree, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
+        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches, xmlstring=xml_string)
 
 def decode(value):
     # Convert value to unicode to use with lxml
@@ -424,6 +448,13 @@ def main():
     # Yes: Set the attribute, exit
     if module.params['value'] is not None:
         set_target(module, x, xpath, namespaces, attribute, value)
+
+    ##################################################################
+    # Format the xml only?
+    if module.params['pretty_print']:
+        pretty(module, x)
+
+    abort(module, "don't know what to do")
 
 ######################################################################
 from ansible.module_utils.basic import *
