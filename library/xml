@@ -286,10 +286,16 @@ def abort(msg, m):
     m.fail_json(msg=msg)
 
 def finish(tree, xpath, namespaces, m, changed=False, msg="", hitcount=0, matches=[]):
-    if changed:
+    if not changed:
+        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
+
+    if m.params['file']:
         xml_file = os.path.expanduser(m.params['file'])
         tree.write(xml_file, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
-    m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
+        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
+    if m.params['xmlstring']:
+        xmlstring = etree.tostring(tree, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
+        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches, xmlstring=xmlstring)
 
 def decode(value):
     # Convert value to unicode to use with lxml
@@ -309,7 +315,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             file=dict(required=False, default=''),
-            xmlstring=dict(required=False, default=None),
+            xmlstring=dict(required=False, default=''),
             xpath=dict(required=False, default='/'),
             namespaces=dict(required=False, default={}, type='dict'),
             ensure=dict(required=False, default='present', choices=['absent', 'present']),
