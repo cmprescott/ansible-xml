@@ -5,5 +5,12 @@ galaxy_info:
   min_ansible_version: 1.6
   categories:
     - files
+  platforms:
+    - name: GenericLinux
+      versions:
+      - all
+      - any
+
 dependencies: []
+
 ...
