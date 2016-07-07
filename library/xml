@@ -293,7 +293,16 @@ def child_to_element(module, child):
 
         (key, value) = child.items()[0]
         if type(value) == dict:
+            children = value.pop('_', None)
+
             node = etree.Element(key, value)
+
+            if children is not None:
+                if type(children) != list:
+                    abort(module, "Invalid children type: %s, must be list." % str(type(children)))
+
+                subnodes = children_to_nodes(module, children)
+                node.extend(subnodes)
         else:
             node = etree.Element(key)
             node.text = value
