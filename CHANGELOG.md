@@ -2,6 +2,15 @@
 
 ## [Unreleased] - 
 
+## [0.3.4] - 2010-07-06
+### Added
+- xmlstring output variable
+- abort statement at the end to prevent situations with unclear workflow end
+- pretty print only (without modifying the xml)
+
+### Updated
+- refactor method signatures so module parameter is first
+
 ## [0.3.3] - 2010-06-01
 ### Added
 - Unicode symbol support
@@ -56,7 +65,8 @@
 - unit tests
 - Travis continuous integration
 
-[Unreleased]: https://github.com/cmprescott/ansible-xml/compare/0.3.3...HEAD
+[Unreleased]: https://github.com/cmprescott/ansible-xml/compare/0.3.4...HEAD
+[0.3.4]: https://github.com/cmprescott/ansible-xml/compare/0.3.3...0.3.4
 [0.3.3]: https://github.com/cmprescott/ansible-xml/compare/0.3.2...0.3.3
 [0.3.2]: https://github.com/cmprescott/ansible-xml/compare/0.3.1...0.3.2
 [0.3.1]: https://github.com/cmprescott/ansible-xml/compare/0.3.0...0.3.1
