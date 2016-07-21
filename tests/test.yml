@@ -27,6 +27,7 @@
     - include: test-set-namespaced-element-value.yml
     - include: test-get-element-content.yml
     - include: test-xmlstring.yml
+    - include: test-children-elements-xml.yml
 
     # Unicode tests
     - include: test-add-children-elements-unicode.yml
