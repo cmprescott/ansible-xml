@@ -98,6 +98,14 @@ options:
     choices:
       - "attribute"
       - "text"
+  input_type:
+    description:
+      - "Type of input for add_children and set_children"
+    required: false
+    default: "yaml"
+    choices:
+      - "yaml"
+      - "xml"
 requirements:
     - The remote end must have the Python C(lxml) library installed
 author: Tim Bielawa, Magnus Hedemark
@@ -177,11 +185,11 @@ def delete_xpath_target(module, tree, xpath, namespaces):
     else:
         finish(module, tree, xpath, namespaces, changed=True)
 
-def set_target_children(module, tree, xpath, namespaces, children):
+def set_target_children(module, tree, xpath, namespaces, children, type):
     matches = tree.xpath(xpath, namespaces=namespaces)
 
     # Create a list of our new children
-    children = children_to_nodes(module=module, children=children)
+    children = children_to_nodes(module, children, type)
     children_as_string = [lxml.etree.tostring(c) for c in children]
 
     changed = False
@@ -208,9 +216,9 @@ def set_target_children(module, tree, xpath, namespaces, children):
     # Write it out
     finish(module, tree, xpath, namespaces, changed=changed)
 
-def add_target_children(module, tree, xpath, namespaces, children):
+def add_target_children(module, tree, xpath, namespaces, children, type):
     if is_node(tree, xpath, namespaces):
-        new_kids = children_to_nodes(module, children)
+        new_kids = children_to_nodes(module, children, type)
         for node in tree.xpath(xpath, namespaces=namespaces):
             if not module.check_mode: node.extend(new_kids)
         finish(module, tree, xpath, namespaces, changed=True)
@@ -283,36 +291,50 @@ def get_element_attr(module, tree, xpath, namespaces):
 
     finish(module, tree, xpath, namespaces, changed=False, msg=len(elements), hitcount=len(elements), matches=elements)
 
-def child_to_element(module, child):
-    ch_type = type(child)
-    if ch_type == str or ch_type == unicode:
-        return etree.Element(child)
-    elif ch_type == dict:
-        if len(child) > 1:
-            abort(module, "Can only create children from hashes with one key")
+def child_to_element(module, child, in_type):
+    if in_type == 'xml':
+        infile = BytesIO(child.encode('utf-8'))
 
-        (key, value) = child.items()[0]
-        if type(value) == dict:
-            children = value.pop('_', None)
+        try:
+            parser = etree.XMLParser()
+            node = etree.parse(infile, parser)
+            return node.getroot()
+        except etree.XMLSyntaxError, e:
+            module.fail_json(
+                msg="Error while parsing child element: %s" %
+                str(e))
+    elif in_type == 'yaml':
+        ch_type = type(child)
+        if ch_type == str or ch_type == unicode:
+            return etree.Element(child)
+        elif ch_type == dict:
+            if len(child) > 1:
+                abort(module, "Can only create children from hashes with one key")
 
-            node = etree.Element(key, value)
+            (key, value) = child.items()[0]
+            if type(value) == dict:
+                children = value.pop('_', None)
 
-            if children is not None:
-                if type(children) != list:
-                    abort(module, "Invalid children type: %s, must be list." % str(type(children)))
+                node = etree.Element(key, value)
 
-                subnodes = children_to_nodes(module, children)
-                node.extend(subnodes)
+                if children is not None:
+                    if type(children) != list:
+                        abort(module, "Invalid children type: %s, must be list." % str(type(children)))
+
+                    subnodes = children_to_nodes(module, children)
+                    node.extend(subnodes)
+            else:
+                node = etree.Element(key)
+                node.text = value
+            return node
         else:
-            node = etree.Element(key)
-            node.text = value
-        return node
+            abort(module, "Invalid child type: %s. Children must be either strings or hashes." % str(ch_type))
     else:
-        abort(module, "Invalid child type: %s. Children must be either strings or hashes." % str(ch_type))
+        abort(module, "Invalid child input type: %s. Type must be either xml or yaml." % in_type)
 
-def children_to_nodes(module=None, children=[]):
+def children_to_nodes(module=None, children=[], type='yaml'):
     """turn a str/hash/list of str&hash into a list of elements"""
-    return [child_to_element(module, child) for child in children]
+    return [child_to_element(module, child, type) for child in children]
 
 def abort(m, msg):
     m.fail_json(msg=msg)
@@ -359,7 +381,8 @@ def main():
             count=dict(required=False, default=None, type='bool'),
             print_match=dict(required=False, default=None, type='bool'),
             pretty_print=dict(required=False, default=False, type='bool'),
-            content=dict(required=False, default=None, choices=['attribute', 'text'])
+            content=dict(required=False, default=None, choices=['attribute', 'text']),
+            input_type=dict(required=False, default='yaml', choices=['yaml', 'xml'])
         ),
         supports_check_mode=True,
         mutually_exclusive = [
@@ -384,6 +407,7 @@ def main():
     add_children = decode(module.params['add_children'])
     pretty_print = module.params['pretty_print']
     content = module.params['content']
+    input_type = module.params['input_type']
 
     ##################################################################
     # Check if the file exists
@@ -442,13 +466,13 @@ def main():
     # set_children set?
     # Yes: Set children of target
     if module.params['set_children']:
-        set_target_children(module, x, xpath, namespaces, set_children)
+        set_target_children(module, x, xpath, namespaces, set_children, input_type)
 
     ##################################################################
     # add_children set?
     # Yes: Add children to target
     if module.params['add_children']:
-        add_target_children(module, x, xpath, namespaces, add_children)
+        add_target_children(module, x, xpath, namespaces, add_children, input_type)
 
     # No?: Carry on
 
