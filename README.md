@@ -163,7 +163,7 @@ xml: file=/foo/bar.xml xpath=/beers
 children elements.
 
 [doc_xpath]: https://developer.mozilla.org/en-US/docs/Web/XPath
-[doc_install_as_role]: http://docs.ansible.com/ansible/playbooks_roles.html#embedding-modules-in-roles
+[doc_install_as_role]: http://docs.ansible.com/ansible/playbooks_roles.html#embedding-modules-and-plugins-in-roles
 [doc_install_in_path]: http://docs.ansible.com/ansible/developing_modules.html#module-paths
 [doc_install_in_playbook]: http://docs.ansible.com/ansible/playbooks_best_practices.html#bundling-ansible-modules-with-playbooks
 [github_issue_16]: https://github.com/cmprescott/ansible-xml/issues/16
