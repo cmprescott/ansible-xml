@@ -2,7 +2,7 @@
 
 ## [Unreleased] - 
 
-## [0.3.4] - 2010-07-06
+## [0.3.4] - 2016-07-06
 ### Added
 - ability to add/set nested elements
 - xmlstring output variable
@@ -12,7 +12,7 @@
 ### Updated
 - refactor method signatures so module parameter is first
 
-## [0.3.3] - 2010-06-01
+## [0.3.3] - 2016-06-01
 ### Added
 - Unicode symbol support
 
