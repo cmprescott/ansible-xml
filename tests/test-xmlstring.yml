@@ -6,7 +6,9 @@
     register: xmlresponse
  
   - name: Write result to file
-    copy: dest=/tmp/ansible-xml-beers.xml content="{{ xmlresponse.xmlstring }}"
+    copy:
+      dest: /tmp/ansible-xml-beers.xml
+      content: "{{ xmlresponse.xmlstring }}"
 
   - name: Test expected result
     command: diff results/test-pretty-print-only.xml /tmp/ansible-xml-beers.xml
@@ -21,7 +23,9 @@
     register: xmlresponse_modification
  
   - name: Write result to file
-    copy: dest=/tmp/ansible-xml-beers.xml content="{{ xmlresponse_modification.xmlstring }}"
+    copy:
+      dest: /tmp/ansible-xml-beers.xml
+      content: "{{ xmlresponse_modification.xmlstring }}"
 
   - name: Test expected result
     command: diff results/test-pretty-print.xml /tmp/ansible-xml-beers.xml
