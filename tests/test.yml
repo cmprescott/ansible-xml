@@ -10,6 +10,7 @@
     - include: test-add-children-elements.yml
     - include: test-add-children-from-groupvars.yml
     - include: test-add-children-with-attributes.yml
+    - include: test-add-element-implicitly.yml
     - include: test-count.yml
     - include: test-mutually-exclusive-attributes.yml
     - include: test-remove-attribute.yml
