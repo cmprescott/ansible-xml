@@ -230,20 +230,30 @@ def add_target_children(module, tree, xpath, namespaces, children, type):
     else:
         finish(module, tree, xpath, namespaces)
 
-_re_splitSimpleLast = re.compile("^(.*)/([a-zA-Z][a-zA-Z0-9_]*)$")
+_ident = "[a-zA-Z-][a-zA-Z0-9_-]*"
+_nsIdent = _ident +"|"+_ident+":"+_ident
+_re_splitSimpleLast = re.compile("^(.*)/("+_nsIdent+")$")
+_re_splitSimpleAttrLast = re.compile("^(.*)/(@(?:"+_nsIdent+"))$")
 def split_xpath_last(xpath):
     """split an XPath of the form /foo/bar/baz into /foo/bar and baz"""
     xpath = xpath.strip()
     m = _re_splitSimpleLast.match(xpath)
     if m:
         return (m.group(1), [(m.group(2), None)]) # requesting an attribute to exist
+    m = _re_splitSimpleAttrLast.match(xpath)
+    if m:
+        return (m.group(1), [(m.group(2), None)]) # requesting an attribute to exist
 
-    return (xpath, None)
+    return (xpath, [])
 
 def check_or_make_target(module, tree, xpath, namespaces):
+    (inner_xpath, changes) = split_xpath_last(xpath)
+    if (inner_xpath == xpath) or (changes == None):
+        abort(module, "Can't process Xpath " + xpath + " in order to spawn nodes! tree is " + etree.tostring(tree, pretty_print=True))
+        return False
+
     changed = False
 
-    (inner_xpath, changes) = split_xpath_last(xpath)
     if not is_node(tree, inner_xpath, namespaces):
         changed = check_or_make_target(module, tree, inner_xpath, namespaces)
 
@@ -256,14 +266,36 @@ def check_or_make_target(module, tree, xpath, namespaces):
                     if not module.check_mode: node.extend(new_kids)
                     changed = True
                 #abort(module, "now tree=" + etree.tostring(tree, pretty_print=True))
+            elif eoa[0] == '@':
+                attribute = eoa[1:]
+
+                if ":" in attribute:
+                    attr_ns, attr_name = attribute.split(":")
+                    attribute = "{{{0}}}{1}".format(namespaces[attr_ns], attr_name)
+
+                for element in tree.xpath(inner_xpath, namespaces=namespaces):
+                    changing = (not element.attrib.has_key(attribute)) or (element.attrib.get(attribute) != eoa_value)
+
+                    if not module.check_mode and changing:
+                        changed = changed or changing
+                        if eoa_value is None:
+                            value = ""
+                        else:
+                            value = eoa_value
+                        element.attrib[attribute] = value
+
+                    #abort(module, "arf "+xpath+"  changing="+str(changing)+"  as curval="+str(element.get(attribute))+" changed tree=" + etree.tostring(tree, pretty_print=True))
+
+
             else:
                 abort(module, "NTO changed tree=" + etree.tostring(tree, pretty_print=True))
+
     return changed
 
 
 def ensure_xpath_exists(module, tree, xpath, namespaces):
     changed = False
-    
+
     if not is_node(tree, xpath, namespaces):
         changed = check_or_make_target(module, tree, xpath, namespaces)
 
@@ -276,7 +308,7 @@ def set_target_inner(module, tree, xpath, namespaces, attribute, value):
         changed = check_or_make_target(module, tree, xpath, namespaces)
 
     if not is_node(tree, xpath, namespaces):
-        abort(module, "Xpath " + xpath + " does not reference a node! tree is " + str(tree))
+        abort(module, "Xpath " + xpath + " does not reference a node! tree is " + etree.tostring(tree, pretty_print=True))
 
     for element in tree.xpath(xpath, namespaces=namespaces):
         if not attribute:

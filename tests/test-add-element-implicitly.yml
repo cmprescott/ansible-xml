@@ -11,6 +11,12 @@
 - name: Add a owner element to the business element, testing implicit mkdir -p behavior 2/2
   xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/owner/name/first value=John
 
-
 - name: Add a validxhtml element to the website element. Note that ensure is present by default and while value defaults to null for elements, if one doesn't specify it we don't know what to do.
-  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/website/validxhtml ensure=present
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/website/validxhtml
+
+
+- name: Add an empty validateon attribute to the validxhtml element. This actually makes the previous example redundant because of the implicit parent-node creation behavior.
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/website/validxhtml/@validateon
+
+- name: Add an empty validateon attribute to the validxhtml element. Actually verifies the implicit parent-node creation behavior.
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/website_bis/validxhtml/@validateon
