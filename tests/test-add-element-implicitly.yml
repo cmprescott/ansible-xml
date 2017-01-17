@@ -33,6 +33,9 @@
 - name: Add two attributes on a conditional element
   xml: file=/tmp/ansible-xml-beers-implicit.xml xpath="/business/beers/beer[text()=\"Pilsner Urquell\" and @origin='CZ']/@color='blonde'"
 
+- name: Add a owner element to the business element, testing implicit mkdir -p behavior 3/2 -- complex lookup
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/owner/name[first/text()='John']/middle value=Q
+
 - name: Pretty Print this!
   xml: file=/tmp/ansible-xml-beers-implicit.xml pretty_print=True
 

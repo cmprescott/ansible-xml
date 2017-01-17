@@ -119,8 +119,7 @@ try:
 except:
     import simplejson as json
 import lxml
-import os
-import re
+import sys, os, re
 
 def print_match(module, tree, xpath, namespaces):
     match = tree.xpath(xpath, namespaces=namespaces)
@@ -357,8 +356,11 @@ def ensure_xpath_exists(module, tree, xpath, namespaces):
 def set_target_inner(module, tree, xpath, namespaces, attribute, value):
     changed = False
 
-    if not is_node(tree, xpath, namespaces):
-        changed = check_or_make_target(module, tree, xpath, namespaces)
+    try:
+        if not is_node(tree, xpath, namespaces):
+            changed = check_or_make_target(module, tree, xpath, namespaces)
+    except Exception, e:
+        abort(module, "Xpath " + xpath + " causes a failure: "+str(e)+"  -- tree is " + etree.tostring(tree, pretty_print=True))
 
     if not is_node(tree, xpath, namespaces):
         abort(module, "Xpath " + xpath + " does not reference a node! tree is " + etree.tostring(tree, pretty_print=True))
