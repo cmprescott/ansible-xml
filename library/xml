@@ -119,7 +119,7 @@ try:
 except:
     import simplejson as json
 import lxml
-import sys, os, re
+import sys, os, re, traceback
 
 def print_match(module, tree, xpath, namespaces):
     match = tree.xpath(xpath, namespaces=namespaces)
@@ -274,6 +274,14 @@ def split_xpath_last(xpath):
         return (m.group(1), [("", _extract_xpstr(m.group(2)))]) # requesting a change of inner text
     return (xpath, [])
 
+def nsnameToClark(name, namespaces):
+    if ":" in name:
+        (nsname, rawname) = name.split(":")
+        return "{{{0}}}{1}".format(namespaces[nsname], rawname)
+    else:
+        # no namespace name here
+        return name
+
 def check_or_make_target(module, tree, xpath, namespaces):
     (inner_xpath, changes) = split_xpath_last(xpath)
     if (inner_xpath == xpath) or (changes == None):
@@ -289,7 +297,7 @@ def check_or_make_target(module, tree, xpath, namespaces):
         for (eoa, eoa_value) in changes:
             if eoa and eoa[0] != '@' and eoa[0] != '/':
                 # implicitly creating an element
-                new_kids = children_to_nodes(module, [eoa], "yaml")
+                new_kids = children_to_nodes(module, [nsnameToClark(eoa, namespaces)], "yaml")
                 if eoa_value:
                     for nk in new_kids:
                         nk.text = eoa_value
@@ -300,7 +308,7 @@ def check_or_make_target(module, tree, xpath, namespaces):
                 #abort(module, "now tree=" + etree.tostring(tree, pretty_print=True))
             elif eoa and eoa[0] == '/':
                 element = eoa[1:]
-                new_kids = children_to_nodes(module, [element], "yaml")
+                new_kids = children_to_nodes(module, [nsnameToClark(element, namespaces)], "yaml")
 
                 for node in tree.xpath(inner_xpath, namespaces=namespaces):
                     if not module.check_mode: node.extend(new_kids)
@@ -319,11 +327,7 @@ def check_or_make_target(module, tree, xpath, namespaces):
                         changed = True
 
             elif eoa and eoa[0] == '@':
-                attribute = eoa[1:]
-
-                if ":" in attribute:
-                    attr_ns, attr_name = attribute.split(":")
-                    attribute = "{{{0}}}{1}".format(namespaces[attr_ns], attr_name)
+                attribute = nsnameToClark(eoa[1:], namespaces)
 
                 for element in tree.xpath(inner_xpath, namespaces=namespaces):
                     changing = (not element.attrib.has_key(attribute)) or (element.attrib.get(attribute) != eoa_value)
@@ -340,7 +344,7 @@ def check_or_make_target(module, tree, xpath, namespaces):
 
 
             else:
-                abort(module, "NTO changed tree=" + etree.tostring(tree, pretty_print=True))
+                abort(module, "unknown tree transformation=" + etree.tostring(tree, pretty_print=True))
 
     return changed
 
@@ -360,7 +364,7 @@ def set_target_inner(module, tree, xpath, namespaces, attribute, value):
         if not is_node(tree, xpath, namespaces):
             changed = check_or_make_target(module, tree, xpath, namespaces)
     except Exception, e:
-        abort(module, "Xpath " + xpath + " causes a failure: "+str(e)+"  -- tree is " + etree.tostring(tree, pretty_print=True))
+        abort(module, "Xpath " + xpath + " causes a failure: "+str(e)+ "\n" + traceback.format_exc(e)+"\n  -- tree is " + etree.tostring(tree, pretty_print=True))
 
     if not is_node(tree, xpath, namespaces):
         abort(module, "Xpath " + xpath + " does not reference a node! tree is " + etree.tostring(tree, pretty_print=True))
