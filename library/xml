@@ -120,6 +120,7 @@ except:
     import simplejson as json
 import lxml
 import os
+import re
 
 def print_match(module, tree, xpath, namespaces):
     match = tree.xpath(xpath, namespaces=namespaces)
@@ -185,7 +186,7 @@ def delete_xpath_target(module, tree, xpath, namespaces):
     else:
         finish(module, tree, xpath, namespaces, changed=True)
 
-def set_target_children(module, tree, xpath, namespaces, children, type):
+def set_target_children_inner(module, tree, xpath, namespaces, children, type):
     matches = tree.xpath(xpath, namespaces=namespaces)
 
     # Create a list of our new children
@@ -213,6 +214,10 @@ def set_target_children(module, tree, xpath, namespaces, children, type):
             replace_children_of(match)
             changed = True
 
+    return changed
+
+def set_target_children(module, tree, xpath, namespaces, children, type):
+    changed = set_target_children_inner(module, tree, xpath, namespaces, children, type)
     # Write it out
     finish(module, tree, xpath, namespaces, changed=changed)
 
@@ -225,11 +230,53 @@ def add_target_children(module, tree, xpath, namespaces, children, type):
     else:
         finish(module, tree, xpath, namespaces)
 
-def set_target(module, tree, xpath, namespaces, attribute, value):
+_re_splitSimpleLast = re.compile("^(.*)/([a-zA-Z][a-zA-Z0-9_]*)$")
+def split_xpath_last(xpath):
+    """split an XPath of the form /foo/bar/baz into /foo/bar and baz"""
+    xpath = xpath.strip()
+    m = _re_splitSimpleLast.match(xpath)
+    if m:
+        return (m.group(1), [(m.group(2), None)]) # requesting an attribute to exist
+
+    return (xpath, None)
+
+def check_or_make_target(module, tree, xpath, namespaces):
+    changed = False
+
+    (inner_xpath, changes) = split_xpath_last(xpath)
+    if not is_node(tree, inner_xpath, namespaces):
+        changed = check_or_make_target(module, tree, inner_xpath, namespaces)
+
+    if is_node(tree, inner_xpath, namespaces) and changes: # we test again after calling check_or_make_target
+        for (eoa, eoa_value) in changes:
+            if eoa[0] != '@' and (eoa_value is None):
+                # implicitly creating an element
+                new_kids = children_to_nodes(module, [eoa], "yaml")
+                for node in tree.xpath(inner_xpath, namespaces=namespaces):
+                    if not module.check_mode: node.extend(new_kids)
+                    changed = True
+                #abort(module, "now tree=" + etree.tostring(tree, pretty_print=True))
+            else:
+                abort(module, "NTO changed tree=" + etree.tostring(tree, pretty_print=True))
+    return changed
+
+
+def ensure_xpath_exists(module, tree, xpath, namespaces):
+    changed = False
+    
+    if not is_node(tree, xpath, namespaces):
+        changed = check_or_make_target(module, tree, xpath, namespaces)
+
+    finish(module, tree, xpath, namespaces, changed)
+
+def set_target_inner(module, tree, xpath, namespaces, attribute, value):
     changed = False
 
     if not is_node(tree, xpath, namespaces):
-        abort(module, "Xpath " + xpath + " does not reference a node!")
+        changed = check_or_make_target(module, tree, xpath, namespaces)
+
+    if not is_node(tree, xpath, namespaces):
+        abort(module, "Xpath " + xpath + " does not reference a node! tree is " + str(tree))
 
     for element in tree.xpath(xpath, namespaces=namespaces):
         if not attribute:
@@ -242,6 +289,10 @@ def set_target(module, tree, xpath, namespaces, attribute, value):
                 attribute = "{{{0}}}{1}".format(namespaces[attr_ns], attr_name)
             if not module.check_mode and (element.get(attribute) != value): element.set(attribute, value)
 
+    return changed
+
+def set_target(module, tree, xpath, namespaces, attribute, value):
+    changed = set_target_inner(module, tree, xpath, namespaces, attribute, value)
     finish(module, tree, xpath, namespaces, changed)
 
 def pretty(module, tree):
@@ -487,7 +538,8 @@ def main():
     if module.params['pretty_print']:
         pretty(module, x)
 
-    abort(module, "don't know what to do")
+    ensure_xpath_exists(module, x, xpath, namespaces)
+    #abort(module, "don't know what to do")
 
 ######################################################################
 from ansible.module_utils.basic import *

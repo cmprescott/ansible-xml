@@ -1,7 +1,16 @@
 ---
 - name: Setup test fixture
-  copy: src=fixtures/ansible-xml-beers.xml dest=/tmp/ansible-xml-beers.xml
+  copy: src=fixtures/ansible-xml-beers.xml dest=/tmp/ansible-xml-beers-implicit.xml
 
 - name: Add a phonenumber element to the business element. Implicit mkdir -p behavior where applicable
-  xml: file=/tmp/ansible-xml-beers.xml xpath=/business/phonenumber value=555-555-1234
-  
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/phonenumber value=555-555-1234
+
+- name: Add a owner element to the business element, testing implicit mkdir -p behavior 1/2
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/owner/name/last value=Smith
+
+- name: Add a owner element to the business element, testing implicit mkdir -p behavior 2/2
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/owner/name/first value=John
+
+
+- name: Add a validxhtml element to the website element. Note that ensure is present by default and while value defaults to null for elements, if one doesn't specify it we don't know what to do.
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/website/validxhtml ensure=present
