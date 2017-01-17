@@ -31,4 +31,10 @@
   xml: file=/tmp/ansible-xml-beers-implicit.xml xpath="/business/beers/beer[text()=\"George Killian's Irish Red\"]/@color='red'"
 
 - name: Add two attributes on a conditional element
-  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath="/business/beers/beer[text()=\"Pilsner Urquell\" and @origin='CZ']/@color='blonde'" 
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath="/business/beers/beer[text()=\"Pilsner Urquell\" and @origin='CZ']/@color='blonde'"
+
+- name: Pretty Print this!
+  xml: file=/tmp/ansible-xml-beers-implicit.xml pretty_print=True
+
+- name: Test expected result
+  command: diff -u results/test-add-element-implicitly.yml /tmp/ansible-xml-beers-implicit.xml
