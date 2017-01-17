@@ -232,18 +232,47 @@ def add_target_children(module, tree, xpath, namespaces, children, type):
 
 _ident = "[a-zA-Z-][a-zA-Z0-9_-]*"
 _nsIdent = _ident +"|"+_ident+":"+_ident
+_xpstr = "('(?:.*)'|\"(?:.*)\")" # Note: we can't reasonably support the 'if you need to put both ' and " in a string, concatenate
+                               # strings wrapped by the other delimiter' XPath trick, especially as simple XPath.
+
 _re_splitSimpleLast = re.compile("^(.*)/("+_nsIdent+")$")
+_re_splitSimpleLastEqValue = re.compile("^(.*)/("+_nsIdent+")/text\\(\\)="+_xpstr+"$")
 _re_splitSimpleAttrLast = re.compile("^(.*)/(@(?:"+_nsIdent+"))$")
+_re_splitSimpleAttrLastEqValue = re.compile("^(.*)/(@(?:"+_nsIdent+"))="+_xpstr+"$")
+
+_re_splitSubLast = re.compile("^(.*)/("+_nsIdent+")\\[(.*)\\]$")
+
+_re_splitOnlyEqValue = re.compile("^(.*)/text\\(\\)="+_xpstr+"$")
+
+def _extract_xpstr(g):
+    return g[1:-1]
+
 def split_xpath_last(xpath):
     """split an XPath of the form /foo/bar/baz into /foo/bar and baz"""
     xpath = xpath.strip()
     m = _re_splitSimpleLast.match(xpath)
     if m:
-        return (m.group(1), [(m.group(2), None)]) # requesting an attribute to exist
+        return (m.group(1), [(m.group(2), None)]) # requesting an element to exist
+    m = _re_splitSimpleLastEqValue.match(xpath)
+    if m:
+        return (m.group(1), [(m.group(2), _extract_xpstr(m.group(3)))]) # requesting an element to exist with an inner text
+
     m = _re_splitSimpleAttrLast.match(xpath)
     if m:
         return (m.group(1), [(m.group(2), None)]) # requesting an attribute to exist
+    m = _re_splitSimpleAttrLastEqValue.match(xpath)
+    if m:
+        return (m.group(1), [(m.group(2), _extract_xpstr(m.group(3)))]) # requesting an attribute to exist with a value
 
+    m = _re_splitSubLast.match(xpath)
+    if m:
+        content = map(lambda x: x.strip(), m.group(3).split(" and "))
+
+        return (m.group(1),  [('/'+m.group(2), content )] )
+
+    m = _re_splitOnlyEqValue.match(xpath)
+    if m:
+        return (m.group(1), [("", _extract_xpstr(m.group(2)))]) # requesting a change of inner text
     return (xpath, [])
 
 def check_or_make_target(module, tree, xpath, namespaces):
@@ -259,14 +288,38 @@ def check_or_make_target(module, tree, xpath, namespaces):
 
     if is_node(tree, inner_xpath, namespaces) and changes: # we test again after calling check_or_make_target
         for (eoa, eoa_value) in changes:
-            if eoa[0] != '@' and (eoa_value is None):
+            if eoa and eoa[0] != '@' and eoa[0] != '/':
                 # implicitly creating an element
                 new_kids = children_to_nodes(module, [eoa], "yaml")
+                if eoa_value:
+                    for nk in new_kids:
+                        nk.text = eoa_value
+
                 for node in tree.xpath(inner_xpath, namespaces=namespaces):
                     if not module.check_mode: node.extend(new_kids)
                     changed = True
                 #abort(module, "now tree=" + etree.tostring(tree, pretty_print=True))
-            elif eoa[0] == '@':
+            elif eoa and eoa[0] == '/':
+                element = eoa[1:]
+                new_kids = children_to_nodes(module, [element], "yaml")
+
+                for node in tree.xpath(inner_xpath, namespaces=namespaces):
+                    if not module.check_mode: node.extend(new_kids)
+                    for nk in new_kids:
+                        for subexpr in eoa_value:
+                            #abort(module, "element="+element+" subexpr="+str(subexpr)+" node="+etree.tostring(node, pretty_print=True)+
+                            #    " now tree=" + etree.tostring(tree, pretty_print=True))
+                            check_or_make_target(module, nk, "./"+subexpr, namespaces)
+                    changed = True
+
+                #abort(module, "now tree=" + etree.tostring(tree, pretty_print=True))
+            elif eoa == "":
+                for node in tree.xpath(inner_xpath, namespaces=namespaces):
+                    if (node.text != eoa_value):
+                        node.text = eoa_value
+                        changed = True
+
+            elif eoa and eoa[0] == '@':
                 attribute = eoa[1:]
 
                 if ":" in attribute:
