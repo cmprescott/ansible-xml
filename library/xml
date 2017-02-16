@@ -19,15 +19,16 @@ DOCUMENTATION = '''
 module: xml
 short_description: Manage bits and pieces of XML files or strings
 description:
-  - A CRUD-like interface to managing bits of XML flies. You might also be interested in a brief tutorial, U(http://www.w3schools.com/xpath/). Note that module this does not handle complicated xpath expressions. So limit xpath selectors to simple expressions.
+  - A CRUD-like interface to managing bits of XML files. You might also be interested in a brief tutorial, U(http://www.w3schools.com/xpath/). Note that module this does not handle complicated xpath expressions. So limit xpath selectors to simple expressions.
 version_added: "1.0"
 options:
-  file:
+  path:
     description:
       - Path to the file to operate on. File must exist ahead of time.
     required: true unless xmlstring is given
     default: null
     choices: []
+    aliases: ['dest', 'file']
   xmlstring:
     description:
       - A string containing XML on which to operate.
@@ -390,8 +391,8 @@ def pretty(module, tree):
     xml_string = etree.tostring(tree, xml_declaration=True, encoding='UTF-8', pretty_print=module.params['pretty_print'])
     changed = False
 
-    if module.params['file']:
-        xml_file = os.path.expanduser(module.params['file'])
+    if module.params['path']:
+        xml_file = os.path.expanduser(module.params['path'])
 
         xml_content = open(xml_file)
         try:
@@ -485,8 +486,8 @@ def finish(m, tree, xpath, namespaces, changed=False, msg="", hitcount=0, matche
     if not changed:
         m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
 
-    if m.params['file']:
-        xml_file = os.path.expanduser(m.params['file'])
+    if m.params['path']:
+        xml_file = os.path.expanduser(m.params['path'])
         tree.write(xml_file, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
         m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
 
@@ -511,7 +512,7 @@ def decode(value):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            file=dict(required=False, default=''),
+            path=dict(required=False, default='', aliases=['dest', 'file']),
             xmlstring=dict(required=False, default=''),
             xpath=dict(required=False, default='/'),
             namespaces=dict(required=False, default={}, type='dict'),
@@ -531,14 +532,14 @@ def main():
             ['value','set_children'],
             ['value','add_children'],
             ['set_children', 'add_children'],
-            ['file', 'xmlstring'],
+            ['path', 'xmlstring'],
             ['content','set_children'],
             ['content','add_children'],
             ['content','value'],
         ]
     )
 
-    xml_file = os.path.expanduser(module.params['file'])
+    xml_file = os.path.expanduser(module.params['path'])
     xml_string = module.params['xmlstring']
     xpath = module.params['xpath']
     namespaces = module.params['namespaces']

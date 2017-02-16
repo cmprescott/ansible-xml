@@ -4,7 +4,7 @@
 
   - name: Set child elements
     xml:
-      file: /tmp/ansible-xml-beers.xml
+      path: /tmp/ansible-xml-beers.xml
       xpath: /business/beers
       set_children:
         - beer:
@@ -37,7 +37,7 @@
 
   - name: Set child elements
     xml:
-      file: /tmp/ansible-xml-beers.xml
+      path: /tmp/ansible-xml-beers.xml
       xpath: /business/beers
       set_children:
         - beer:
@@ -66,5 +66,6 @@
                   quantity: 20g
     register: set_children_again
 
-  - fail: msg="Setting children is not idempotent!"
+  - fail:
+      msg: "Setting children is not idempotent!"
     when: set_children_again.changed

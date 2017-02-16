@@ -1,10 +1,12 @@
 ---
   - name: Setup test fixture
-    copy: src=fixtures/ansible-xml-beers.xml dest=/tmp/ansible-xml-beers.xml
+    copy:
+      src: fixtures/ansible-xml-beers.xml
+      dest: /tmp/ansible-xml-beers.xml
 
   - name: Set '/business/rating/@subjective' to 'нет'
     xml:
-      file: /tmp/ansible-xml-beers.xml
+      path: /tmp/ansible-xml-beers.xml
       xpath: /business/rating
       attribute: subjective
       value: "нет"

@@ -4,7 +4,7 @@
 
   - name: Pretty print without modification
     xml:
-      file: /tmp/ansible-xml-beers.xml
+      path: /tmp/ansible-xml-beers.xml
       pretty_print: True
 
   - name: Test expected result

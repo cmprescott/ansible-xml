@@ -1,10 +1,12 @@
 ---
   - name: Setup test fixture
-    copy: src=fixtures/ansible-xml-beers-unicode.xml dest=/tmp/ansible-xml-beers-unicode.xml
+    copy:
+      src: fixtures/ansible-xml-beers-unicode.xml
+      dest: /tmp/ansible-xml-beers-unicode.xml
 
   - name: Get element attributes
     xml:
-      file: /tmp/ansible-xml-beers-unicode.xml
+      path: /tmp/ansible-xml-beers-unicode.xml
       xpath: /business/rating
       content: 'attribute'
     register: get_element_attribute
@@ -12,7 +14,7 @@
 
   - name: Get element text
     xml:
-      file: /tmp/ansible-xml-beers-unicode.xml
+      path: /tmp/ansible-xml-beers-unicode.xml
       xpath: /business/rating
       content: 'text'
     register: get_element_text
