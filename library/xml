@@ -230,7 +230,7 @@ def add_target_children(module, tree, xpath, namespaces, children, type):
     else:
         finish(module, tree, xpath, namespaces)
 
-_ident = "[a-zA-Z-][a-zA-Z0-9_-]*"
+_ident = "[a-zA-Z-][a-zA-Z0-9_\-\.]*"
 _nsIdent = _ident +"|"+_ident+":"+_ident
 _xpstr = "('(?:.*)'|\"(?:.*)\")" # Note: we can't reasonably support the 'if you need to put both ' and " in a string, concatenate
                                # strings wrapped by the other delimiter' XPath trick, especially as simple XPath.
@@ -310,7 +310,6 @@ def check_or_make_target(module, tree, xpath, namespaces):
             elif eoa and eoa[0] == '/':
                 element = eoa[1:]
                 new_kids = children_to_nodes(module, [nsnameToClark(element, namespaces)], "yaml")
-
                 for node in tree.xpath(inner_xpath, namespaces=namespaces):
                     if not module.check_mode: node.extend(new_kids)
                     for nk in new_kids:

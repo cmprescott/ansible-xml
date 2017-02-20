@@ -26,6 +26,17 @@
 - name: Add an element with a value, alternate syntax
   xml: file=/tmp/ansible-xml-beers-implicit.xml xpath="/business/beers/beer/text()=\"George Killian's Irish Red\"" # note the quote within an XPath string thing
 
+- name: Add an element without special characters
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/testnormalelement value="xml tag with no special characters" pretty_print=true
+
+- name: Add an element with dash
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/test-with-dash value="xml tag with dashes" pretty_print=true
+
+- name: Add an element with dot
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/test-with-dash.and.dot value="xml tag with dashes and dots" pretty_print=true
+
+- name: Add an element with underscore
+  xml: file=/tmp/ansible-xml-beers-implicit.xml xpath=/business/test-with.dash_and.dot_and-underscores value="xml tag with dashes, dots and underscores" pretty_print=true
 
 - name: Add an attribute on a conditional element
   xml: file=/tmp/ansible-xml-beers-implicit.xml xpath="/business/beers/beer[text()=\"George Killian's Irish Red\"]/@color='red'"
@@ -126,6 +137,43 @@
     value: Q
     namespaces:
       a: http://example.com/some/namespace
+
+- name: Add an element without special characters
+  xml:
+    file: /tmp/ansible-xml-beers-implicit.xml
+    xpath: /business/testnormalelement
+    value: "xml tag with no special characters"
+    pretty_print: true
+    namespaces:
+      a:  http://example.com/some/namespace
+
+
+- name: Add an element with dash
+  xml:
+    file: /tmp/ansible-xml-beers-implicit.xml
+    xpath: /business/test-with-dash
+    value: "xml tag with dashes"
+    pretty_print: true
+    namespaces:
+      a:  http://example.com/some/namespace
+
+- name: Add an element with dot
+  xml:
+    file: /tmp/ansible-xml-beers-implicit.xml
+    xpath: /business/test-with-dash.and.dot
+    value: "xml tag with dashes and dots"
+    pretty_print: true
+    namespaces:
+      a:  http://example.com/some/namespace
+
+- name: Add an element with underscore
+  xml:
+    file: /tmp/ansible-xml-beers-implicit.xml
+    xpath: /business/test-with.dash_and.dot_and-underscores
+    value: "xml tag with dashes, dots and underscores"
+    pretty_print: true
+    namespaces:
+      a:  http://example.com/some/namespace
 
 - name: Pretty Print this!
   xml: file=/tmp/ansible-xml-beers-implicit.xml pretty_print=True
