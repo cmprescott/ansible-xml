@@ -18,4 +18,4 @@
 
   - name: Test expected result
     command: diff results/test-set-namespaced-attribute-value.xml /tmp/ansible-xml-namespaced-beers.xml
-    changed_when: False
+    changed_when: no

@@ -13,4 +13,4 @@
 
   - name: Test expected result
     command: diff results/test-set-attribute-value.xml /tmp/ansible-xml-beers.xml
-    changed_when: False
+    changed_when: no

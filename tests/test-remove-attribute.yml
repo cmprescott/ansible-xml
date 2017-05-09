@@ -8,7 +8,7 @@
     xml:
       path: /tmp/ansible-xml-beers.xml
       xpath: /business/rating/@subjective
-      ensure: absent
+      state: absent
 
   - name: Test expected result
     command: diff results/test-remove-attribute.xml /tmp/ansible-xml-beers.xml

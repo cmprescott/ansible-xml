@@ -8,6 +8,6 @@
     xml:
       path: /tmp/ansible-xml-beers-unicode.xml
       xpath: /business/beers/beer
-      count: true
+      count: yes
     register: beers
     failed_when: beers.count != 2

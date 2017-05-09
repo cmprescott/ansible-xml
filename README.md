@@ -66,7 +66,7 @@ Remove the ``subjective`` attribute of the rating element:
 xml:
   path: /foo/bar.xml
   xpath: /business/rating/@subjective
-  ensure: absent
+  state: absent
 ```
 
 Set the rating to **11**
@@ -84,7 +84,7 @@ Get count of beers nodes
 xml:
   path: /foo/bar.xml
   xpath: /business/beers/beer
-  count: true
+  count: yes
 register: hits
 
 debug:
@@ -135,7 +135,7 @@ xml:
 ```
 
 Add a ``validxhtml`` element to the ``website`` element. Note that
-``ensure`` is ``present`` by default, and ``value`` defaults to
+``state`` is ``present`` by default, and ``value`` defaults to
 ``null`` for elements. The result is something like
 ``<website><validxhtml />...</website>``
 
@@ -162,7 +162,7 @@ xml:
 xml:
   path: /foo/bar.xml
   xpath: /business/website/*
-  ensure: absent
+  state: absent
 ```
 
 (2/2) Remove all children from the website element:
@@ -180,7 +180,7 @@ What happens if you say:
 
 ```yaml
 xml:
-  file: /foo/bar.xml
+  path: /foo/bar.xml
   xpath: /beers
 ```
 
