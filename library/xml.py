@@ -14,113 +14,159 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: xml
-short_description: Manage bits and pieces of XML files or strings
+short_description: Manage bits and pieces of XML files or strings.
 description:
   - A CRUD-like interface to managing bits of XML files. You might also be interested in a brief tutorial, U(http://www.w3schools.com/xpath/). Note that module this does not handle complicated xpath expressions. So limit xpath selectors to simple expressions.
-version_added: "1.0"
+version_added: '2.4'
 options:
   path:
     description:
       - Path to the file to operate on. File must exist ahead of time.
     required: true unless xmlstring is given
-    default: null
-    choices: []
-    aliases: ['dest', 'file']
+    aliases: [ dest, file ]
   xmlstring:
     description:
       - A string containing XML on which to operate.
     required: true unless file is given
-    default: null
-    choices: []
   xpath:
     description:
       - A valid XPath expression describing the item(s) you want to manipulate. Operates on the document root, C(/), by default.
-    required: false
     default: /
-    choices: []
   namespaces:
     description:
-      - The namespace prefix:uri mapping for the XPath expression. Needs to be a *map*, not a list of items.
-    required: false
-    default: null
-    choices: []
-  ensure:
+      - The namespace C(prefix:uri) mapping for the XPath expression. Needs to be a C(dict), not a C(list) of items.
+  state:
     description:
-      - Set or remove an xpath selection (node(s), attribute(s))
-    required: false
+      - Set or remove an xpath selection (node(s), attribute(s)).
     default: present
     choices:
-      - "absent"
-      - "present"
+      - absent
+      - present
+    aliases: [ ensure ]
   value:
     description:
       - Desired state of the selected attribute. Either a string, or to unset a value, the Python C(None) keyword (YAML Equivalent, C(null)).
-    required: false
     default: Elements default to no value (but present). Attributes default to an empty string.
-    choices: []
   add_children:
     description:
       - 'Add additional child-element(s) to a selected element. Child elements must be given in a list and each item may be either a string (ex: C(children=ansible) to add an empty C(<ansible/>) child element), or a hash where the key is an element name and the value is the element value.'
-    required: false
-    default: null
-    choices: []
   set_children:
     description:
       - 'Set the the child-element(s) of a selected element. Removes any existing children. Child elements must be specified as in C(add_children).'
-    required: false
-    default: null
-    choices: []
   count:
     description:
-      - "Search for a given C(xpath) and provide the count of any matches"
-    required: false
-    default: null
-    choices: []
+      - Search for a given C(xpath) and provide the count of any matches.
   print_match:
     description:
-      - "Search for a given C(xpath) and print out any matches"
-    required: false
-    default: null
-    choices: []
+      - Search for a given C(xpath) and print out any matches.
   pretty_print:
     description:
-      - "Pretty print output XML"
-    required: false
-    default: false
-    choices: []
+      - Pretty print XML output.
+    default: 'no'
+    choices:
+      - 'no'
+      - 'yes'
   content:
     description:
-      - "Search for a given C(xpath) and get content"
-    required: false
-    default: false
+      - Search for a given C(xpath) and get content.
     choices:
-      - "attribute"
-      - "text"
+      - attribute
+      - text
   input_type:
     description:
-      - "Type of input for add_children and set_children"
-    required: false
-    default: "yaml"
+      - Type of input for C(add_children) and C(set_children).
+    default: yaml
     choices:
-      - "yaml"
-      - "xml"
+      - xml
+      - yaml
 requirements:
-    - The remote end must have the Python C(lxml) library installed
-author: Tim Bielawa, Magnus Hedemark
+    - The remote end must have the Python C(lxml) library installed.
+author:
+- Tim Bielawa (@tbielawa)
+- Magnus Hedemark (@magnus919)
+'''
+
+EXAMPLES = r'''
+- name: Remove the subjective attribute of the rating element:
+  xml:
+    path: /foo/bar.xml
+    xpath: /business/rating/@subjective
+    state: absent
+
+- name: Set the rating to 11
+  xml:
+    path: /foo/bar.xml
+    xpath: /business/rating
+    value: 11
+
+# Retrieve and display the number of nodes
+- name: Get count of beers nodes
+  xml:
+    path: /foo/bar.xml
+    xpath: /business/beers/beer
+    count: yes
+  register: hits
+
+- debug:
+    var: hits.count
+
+- name: Add a phonenumber element to the business element
+  xml:
+    path: /foo/bar.xml
+    xpath: /business/phonenumber
+    value: 555-555-1234
+
+- name: Add several more beers to the beers element
+  xml:
+    path: /foo/bar.xml
+    xpath: /business/beers
+    add_children:
+    - beer: Old Rasputin
+    - beer: Old Motor Oil
+    - beer: Old Curmudgeon
+
+- name: Add a validxhtml element to the website element
+  xml:
+    path: /foo/bar.xml
+    xpath: /business/website/validxhtml
+
+- name: Add an empty validatedon attribute to the validxhtml element
+  xml:
+    path: /foo/bar.xml
+    xpath: /business/website/validxhtml/@validatedon
+
+- name: Remove all children from the website element (option 1)
+  xml:
+    path: /foo/bar.xml
+    xpath: /business/website/*
+    state: absent
+
+- name: Remove all children from the website element (option 2)
+  xml:
+    path: /foo/bar.xml
+    xpath: /business/website
+    children: []
+'''
+
+RETURN = r'''
 '''
 
 
 from io import BytesIO
-from lxml import etree
 try:
     import json
 except:
     import simplejson as json
 import lxml
-import sys, os, re, traceback
+from lxml import etree
+import os
+import re
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.pycompat24 import get_exception
 
 def print_match(module, tree, xpath, namespaces):
     match = tree.xpath(xpath, namespaces=namespaces)
@@ -131,7 +177,7 @@ def print_match(module, tree, xpath, namespaces):
     msg = "selector '%s' match: %s" % (xpath, match_str)
     finish(module, tree, xpath, namespaces, changed=False, msg=msg)
 
-def count(module, tree, xpath, namespaces):
+def count_nodes(module, tree, xpath, namespaces):
     """ Return the count of nodes matching the xpath """
     hits = tree.xpath("count(/%s)" % xpath, namespaces=namespaces)
     finish(module, tree, xpath, namespaces, changed=False, msg=int(hits), hitcount=int(hits))
@@ -151,7 +197,7 @@ def is_node(tree, xpath, namespaces):
 def is_attribute(tree, xpath, namespaces):
     """ Test if a given xpath matches and that match is an attribute
 
-An xpath attribute search will only match one item"""
+    An xpath attribute search will only match one item"""
     if xpath_matches(tree, xpath, namespaces):
         match = tree.xpath(xpath, namespaces=namespaces)
         if type(match[0]) == lxml.etree._ElementStringResult:
@@ -181,8 +227,9 @@ def delete_xpath_target(module, tree, xpath, namespaces):
                 elif is_node(tree, xpath, namespaces):
                     # Delete an element
                     result.getparent().remove(result)
-    except Exception, e:
-        abort(module, "Couldn't delete xpath target: %s (%s)" % (xpath, str(e)))
+    except Exception:
+        e = get_exception()
+        abort(module, "Couldn't delete xpath target: %s (%s)" % (xpath, e))
     else:
         finish(module, tree, xpath, namespaces, changed=True)
 
@@ -363,7 +410,8 @@ def set_target_inner(module, tree, xpath, namespaces, attribute, value):
     try:
         if not is_node(tree, xpath, namespaces):
             changed = check_or_make_target(module, tree, xpath, namespaces)
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         abort(module, "Xpath " + xpath + " causes a failure: "+str(e)+ "\n" + traceback.format_exc(e)+"\n  -- tree is " + etree.tostring(tree, pretty_print=True))
 
     if not is_node(tree, xpath, namespaces):
@@ -441,10 +489,9 @@ def child_to_element(module, child, in_type):
             parser = etree.XMLParser()
             node = etree.parse(infile, parser)
             return node.getroot()
-        except etree.XMLSyntaxError, e:
-            module.fail_json(
-                msg="Error while parsing child element: %s" %
-                str(e))
+        except etree.XMLSyntaxError:
+            e = get_exception()
+            module.fail_json(msg="Error while parsing child element: %s" % e)
     elif in_type == 'yaml':
         ch_type = type(child)
         if ch_type == str or ch_type == unicode:
@@ -461,7 +508,7 @@ def child_to_element(module, child, in_type):
 
                 if children is not None:
                     if type(children) != list:
-                        abort(module, "Invalid children type: %s, must be list." % str(type(children)))
+                        abort(module, "Invalid children type: %s, must be list." % type(children))
 
                     subnodes = children_to_nodes(module, children)
                     node.extend(subnodes)
@@ -470,7 +517,7 @@ def child_to_element(module, child, in_type):
                 node.text = value
             return node
         else:
-            abort(module, "Invalid child type: %s. Children must be either strings or hashes." % str(ch_type))
+            abort(module, "Invalid child type: %s. Children must be either strings or hashes." % ch_type)
     else:
         abort(module, "Invalid child input type: %s. Type must be either xml or yaml." % in_type)
 
@@ -483,16 +530,16 @@ def abort(m, msg):
 
 def finish(m, tree, xpath, namespaces, changed=False, msg="", hitcount=0, matches=[]):
     if not changed:
-        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
+        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "state": m.params['state']}, msg=msg, count=hitcount, matches=matches)
 
     if m.params['path']:
         xml_file = os.path.expanduser(m.params['path'])
         tree.write(xml_file, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
-        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches)
+        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "state": m.params['state']}, msg=msg, count=hitcount, matches=matches)
 
     if m.params['xmlstring']:
         xml_string = etree.tostring(tree, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
-        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "ensure": m.params['ensure']}, msg=msg, count=hitcount, matches=matches, xmlstring=xml_string)
+        m.exit_json(changed=changed,actions={"xpath": xpath, "namespaces": namespaces, "state": m.params['state']}, msg=msg, count=hitcount, matches=matches, xmlstring=xml_string)
 
 def decode(value):
     # Convert value to unicode to use with lxml
@@ -505,26 +552,26 @@ def decode(value):
     elif isinstance(value, dict):
         return dict((key, decode(val)) for key, val in value.iteritems())
     else:
-        raise AttributeError('Undecodable value: type=%s, value=%s' %
-                             (type(value), value))
+        raise AttributeError('Undecodable value: type=%s, value=%s' % (type(value), value))
+
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            path=dict(required=False, default='', aliases=['dest', 'file']),
-            xmlstring=dict(required=False, default=''),
-            xpath=dict(required=False, default='/'),
-            namespaces=dict(required=False, default={}, type='dict'),
-            ensure=dict(required=False, default='present', choices=['absent', 'present']),
-            value=dict(required=False, default=None),
-            attribute=dict(required=False, default=None),
-            add_children=dict(required=False, default=None, type='list'),
-            set_children=dict(required=False, default=None, type='list'),
-            count=dict(required=False, default=None, type='bool'),
-            print_match=dict(required=False, default=None, type='bool'),
-            pretty_print=dict(required=False, default=False, type='bool'),
-            content=dict(required=False, default=None, choices=['attribute', 'text']),
-            input_type=dict(required=False, default='yaml', choices=['yaml', 'xml'])
+            path=dict(type='path', default='', aliases=['dest', 'file']),
+            xmlstring=dict(type='str', default=''),
+            xpath=dict(type='str', default='/'),
+            namespaces=dict(type='dict', default={}),
+            state=dict(type='str', default='present', choices=['absent', 'present'], aliases=['ensure']),
+            value=dict(),
+            attribute=dict(),
+            add_children=dict(type='list'),
+            set_children=dict(type='list'),
+            count=dict(type='bool'),
+            print_match=dict(type='bool'),
+            pretty_print=dict(type='bool'),
+            content=dict(type='str', choices=['attribute', 'text']),
+            input_type=dict(type='str', default='yaml', choices=['yaml', 'xml'])
         ),
         supports_check_mode=True,
         mutually_exclusive = [
@@ -538,11 +585,11 @@ def main():
         ]
     )
 
-    xml_file = os.path.expanduser(module.params['path'])
+    xml_file = module.params['path']
     xml_string = module.params['xmlstring']
     xpath = module.params['xpath']
     namespaces = module.params['namespaces']
-    ensure = module.params['ensure']
+    state = module.params['state']
     value = decode(module.params['value'])
     attribute = module.params['attribute']
     set_children = decode(module.params['set_children'])
@@ -550,6 +597,8 @@ def main():
     pretty_print = module.params['pretty_print']
     content = module.params['content']
     input_type = module.params['input_type']
+    print_match = module.params['print_match']
+    count = module.params['count']
 
     ##################################################################
     # Check if the file exists
@@ -559,28 +608,25 @@ def main():
     elif os.path.isfile(xml_file):
         infile = file(xml_file, 'r')
     else:
-        module.fail_json(
-            msg="The target XML source does not exist: %s" %
-            xml_file)
+        module.fail_json(msg="The target XML source does not exist: %s" % xml_file)
 
     # Try to parse in the target XML file
     try:
         parser = etree.XMLParser(remove_blank_text=pretty_print)
         x = etree.parse(infile, parser)
     except etree.XMLSyntaxError, e:
-        module.fail_json(
-            msg="Error while parsing file: %s" %
-            str(e))
+        e = get_exception()
+        module.fail_json(msg="Error while parsing path: %s" % e)
 
-    if module.params['print_match']:
+    if print_match:
         print_match(module, x, xpath, namespaces)
 
-    if module.params['count']:
-        count(module, x, xpath, namespaces)
+    if count:
+        count_nodes(module, x, xpath, namespaces)
 
     if content == 'attribute':
         get_element_attr(module, x, xpath, namespaces)
-    elif module.params['content'] == 'text':
+    elif content == 'text':
         get_element_text(module, x, xpath, namespaces)
 
     # module.fail_json(msg="OK. Well, etree parsed the xml file...")
@@ -590,7 +636,7 @@ def main():
     ##################################################################
     # File exists:
     # Ensure:
-    if ensure == 'absent':
+    if state == 'absent':
         # - absent: delete xpath target
         delete_xpath_target(module, x, xpath, namespaces)
         # Exit
@@ -607,13 +653,13 @@ def main():
     ##################################################################
     # set_children set?
     # Yes: Set children of target
-    if module.params['set_children']:
+    if set_children:
         set_target_children(module, x, xpath, namespaces, set_children, input_type)
 
     ##################################################################
     # add_children set?
     # Yes: Add children to target
-    if module.params['add_children']:
+    if add_children:
         add_target_children(module, x, xpath, namespaces, add_children, input_type)
 
     # No?: Carry on
@@ -621,19 +667,19 @@ def main():
     ##################################################################
     # Is the xpath target an attribute selector?
     # Yes: Set the attribute, exit
-    if module.params['value'] is not None:
+    if value is not None:
         set_target(module, x, xpath, namespaces, attribute, value)
 
     ##################################################################
     # Format the xml only?
-    if module.params['pretty_print']:
+    if pretty_print:
         pretty(module, x)
 
     ensure_xpath_exists(module, x, xpath, namespaces)
     #abort(module, "don't know what to do")
 
 ######################################################################
-from ansible.module_utils.basic import *
+
 
 if __name__ == '__main__':
     main()
