@@ -25,4 +25,8 @@
   <website_bis>
     <validxhtml validateon=""/>
   </website_bis>
+  <testnormalelement>xml tag with no special characters</testnormalelement>
+  <test-with-dash>xml tag with dashes</test-with-dash>
+  <test-with-dash.and.dot>xml tag with dashes and dots</test-with-dash.and.dot>
+  <test-with.dash_and.dot_and-underscores>xml tag with dashes, dots and underscores</test-with.dash_and.dot_and-underscores>
 </business>
