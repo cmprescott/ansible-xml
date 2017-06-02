@@ -242,7 +242,7 @@ def delete_xpath_target(module, tree, xpath, namespaces):
                     result.getparent().remove(result)
     except Exception:
         e = get_exception()
-        abort(module, "Couldn't delete xpath target: %s (%s)" % (xpath, e))
+        module.fail_json(msg="Couldn't delete xpath target: %s (%s)" % (xpath, e))
     else:
         finish(module, tree, xpath, namespaces, changed=True)
 
@@ -339,7 +339,7 @@ def split_xpath_last(xpath):
     if m:
         content = map(lambda x: x.strip(), m.group(3).split(" and "))
 
-        return (m.group(1), [('/'+m.group(2), content)])
+        return (m.group(1), [('/' + m.group(2), content)])
 
     m = _re_splitOnlyEqValue.match(xpath)
     if m:
@@ -360,7 +360,8 @@ def nsnameToClark(name, namespaces):
 def check_or_make_target(module, tree, xpath, namespaces):
     (inner_xpath, changes) = split_xpath_last(xpath)
     if inner_xpath == xpath or changes is None:
-        abort(module, "Can't process Xpath " + xpath + " in order to spawn nodes! tree is " + etree.tostring(tree, pretty_print=True))
+        module.fail_json(msg="Can't process Xpath %s in order to spawn nodes! tree is " %
+                             (xpath, etree.tostring(tree, pretty_print=True)))
         return False
 
     changed = False
@@ -382,7 +383,7 @@ def check_or_make_target(module, tree, xpath, namespaces):
                     if not module.check_mode:
                         node.extend(new_kids)
                     changed = True
-                # abort(module, "now tree=" + etree.tostring(tree, pretty_print=True))
+                # module.fail_json(msg="now tree=%s" % etree.tostring(tree, pretty_print=True))
             elif eoa and eoa[0] == '/':
                 element = eoa[1:]
                 new_kids = children_to_nodes(module, [nsnameToClark(element, namespaces)], "yaml")
@@ -391,12 +392,12 @@ def check_or_make_target(module, tree, xpath, namespaces):
                         node.extend(new_kids)
                     for nk in new_kids:
                         for subexpr in eoa_value:
-                            # abort(module, "element="+element+" subexpr="+str(subexpr)+" node="+etree.tostring(node, pretty_print=True)+
-                            #       " now tree=" + etree.tostring(tree, pretty_print=True))
+                            # module.fail_json(msg="element=%s subexpr=%s node=%s now tree=%s" %
+                            #                      (element, subexpr, etree.tostring(node, pretty_print=True), etree.tostring(tree, pretty_print=True))
                             check_or_make_target(module, nk, "./"+subexpr, namespaces)
                     changed = True
 
-                # abort(module, "now tree=" + etree.tostring(tree, pretty_print=True))
+                # module.fail_json(msg="now tree=" + etree.tostring(tree, pretty_print=True))
             elif eoa == "":
                 for node in tree.xpath(inner_xpath, namespaces=namespaces):
                     if (node.text != eoa_value):
@@ -417,10 +418,11 @@ def check_or_make_target(module, tree, xpath, namespaces):
                             value = eoa_value
                         element.attrib[attribute] = value
 
-                    # abort(module, "arf "+xpath+"  changing="+str(changing)+"  as curval="+str(element.get(attribute))+" changed tree=" + etree.tostring(tree, pretty_print=True))
+                    # module.fail_json(msg="arf %s changing=%s as curval=%s changed tree=%s" %
+                    #       (xpath, changing, etree.tostring(tree, changing, element[attribute], pretty_print=True)))
 
             else:
-                abort(module, "unknown tree transformation=" + etree.tostring(tree, pretty_print=True))
+                module.fail_json(msg="unknown tree transformation=" + etree.tostring(tree, pretty_print=True))
 
     return changed
 
@@ -442,10 +444,12 @@ def set_target_inner(module, tree, xpath, namespaces, attribute, value):
             changed = check_or_make_target(module, tree, xpath, namespaces)
     except Exception:
         e = get_exception()
-        abort(module, "Xpath %s causes a failure: %s\n%s\n  -- tree is %s" % (xpath, e, traceback.format_exc(e), etree.tostring(tree, pretty_print=True)))
+        module.fail_json(msg="Xpath %s causes a failure: %s\n%s\n  -- tree is %s" %
+                             (xpath, e, traceback.format_exc(e), etree.tostring(tree, pretty_print=True)))
 
     if not is_node(tree, xpath, namespaces):
-        abort(module, "Xpath " + xpath + " does not reference a node! tree is " + etree.tostring(tree, pretty_print=True))
+        module.fail_json(msg="Xpath %s does not reference a node! tree is " %
+                             (xpath, etree.tostring(tree, pretty_print=True)))
 
     for element in tree.xpath(xpath, namespaces=namespaces):
         if not attribute:
@@ -494,7 +498,7 @@ def pretty(module, tree):
 
 def get_element_text(module, tree, xpath, namespaces):
     if not is_node(tree, xpath, namespaces):
-        abort(module, "Xpath " + xpath + " does not reference a node!")
+        module.fail_json(msg="Xpath %s does not reference a node!" % xpath)
 
     elements = []
     for element in tree.xpath(xpath, namespaces=namespaces):
@@ -505,7 +509,7 @@ def get_element_text(module, tree, xpath, namespaces):
 
 def get_element_attr(module, tree, xpath, namespaces):
     if not is_node(tree, xpath, namespaces):
-        abort(module, "Xpath " + xpath + " does not reference a node!")
+        module.fail_json(msg="Xpath " + xpath + " does not reference a node!")
 
     elements = []
     for element in tree.xpath(xpath, namespaces=namespaces):
@@ -535,7 +539,7 @@ def child_to_element(module, child, in_type):
             return etree.Element(child)
         elif ch_type == dict:
             if len(child) > 1:
-                abort(module, "Can only create children from hashes with one key")
+                module.fail_json(msg="Can only create children from hashes with one key")
 
             (key, value) = child.items()[0]
             if type(value) == dict:
@@ -545,7 +549,7 @@ def child_to_element(module, child, in_type):
 
                 if children is not None:
                     if type(children) != list:
-                        abort(module, "Invalid children type: %s, must be list." % type(children))
+                        module.fail_json(msg="Invalid children type: %s, must be list." % type(children))
 
                     subnodes = children_to_nodes(module, children)
                     node.extend(subnodes)
@@ -554,9 +558,9 @@ def child_to_element(module, child, in_type):
                 node.text = value
             return node
         else:
-            abort(module, "Invalid child type: %s. Children must be either strings or hashes." % ch_type)
+            module.fail_json(msg="Invalid child type: %s. Children must be either strings or hashes." % ch_type)
     else:
-        abort(module, "Invalid child input type: %s. Type must be either xml or yaml." % in_type)
+        module.fail_json(msg="Invalid child input type: %s. Type must be either xml or yaml." % in_type)
 
 
 def children_to_nodes(module=None, children=[], type='yaml'):
@@ -564,16 +568,8 @@ def children_to_nodes(module=None, children=[], type='yaml'):
     return [child_to_element(module, child, type) for child in children]
 
 
-def abort(m, msg):
-    m.fail_json(msg=msg)
-
-
 def finish(m, tree, xpath, namespaces, changed=False, msg="", hitcount=0, matches=[]):
-    actions = dict(
-        xpath=xpath,
-        namespaces=namespaces,
-        state=m.params['state'],
-    )
+    actions = dict(xpath=xpath, namespaces=namespaces, state=m.params['state'])
 
     if not changed:
         m.exit_json(changed=changed, actions=actions, msg=msg, count=hitcount, matches=matches)
@@ -723,7 +719,7 @@ def main():
         pretty(module, x)
 
     ensure_xpath_exists(module, x, xpath, namespaces)
-    # abort(module, "don't know what to do")
+    # module.fail_json(msg="don't know what to do")
 
 ######################################################################
 
