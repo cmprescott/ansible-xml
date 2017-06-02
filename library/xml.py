@@ -69,9 +69,13 @@ options:
   count:
     description:
     - Search for a given C(xpath) and provide the count of any matches.
+    type: 'bool'
+    default: 'no'
   print_match:
     description:
     - Search for a given C(xpath) and print out any matches.
+    type: 'bool'
+    default: 'no'
   pretty_print:
     description:
     - Pretty print XML output.
@@ -610,9 +614,9 @@ def main():
             attribute=dict(),
             add_children=dict(type='list'),
             set_children=dict(type='list'),
-            count=dict(type='bool'),
-            print_match=dict(type='bool'),
-            pretty_print=dict(type='bool'),
+            count=dict(type='bool', default=False),
+            print_match=dict(type='bool', default=False),
+            pretty_print=dict(type='bool', default=False),
             content=dict(type='str', choices=['attribute', 'text']),
             input_type=dict(type='str', default='yaml', choices=['yaml', 'xml'])
         ),
