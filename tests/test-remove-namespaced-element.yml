@@ -13,7 +13,7 @@
         ber: http://test.beers
         rat: http://test.rating
         attr: http://test.attribute
-      ensure: absent
+      state: absent
 
   - name: Test expected result
     command: diff results/test-remove-element.xml /tmp/ansible-xml-namespaced-beers.xml

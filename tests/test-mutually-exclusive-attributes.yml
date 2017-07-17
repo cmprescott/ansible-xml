@@ -12,4 +12,4 @@
             - child02
         value: conflict!
     register: module_output
-    failed_when: "module_output.failed == 'false'"
+    failed_when: module_output.failed == 'false'

@@ -27,7 +27,7 @@
 
   - name: Test expected result
     command: diff results/test-set-element-value.xml /tmp/ansible-xml-beers.xml
-    changed_when: False
+    changed_when: no
 
   - name: Test registered 'changed' on run 1 and unchanged on run 2
     assert:

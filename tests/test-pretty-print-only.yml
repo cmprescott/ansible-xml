@@ -1,11 +1,11 @@
 ---
   - name: Setup test fixture
-    shell: cat fixtures/ansible-xml-beers.xml | sed 's/^[ ]*//g' > /tmp/ansible-xml-beers.xml
+    shell: sed 's/^[ ]*//g' <fixtures/ansible-xml-beers.xml >/tmp/ansible-xml-beers.xml
 
   - name: Pretty print without modification
     xml:
       path: /tmp/ansible-xml-beers.xml
-      pretty_print: True
+      pretty_print: yes
 
   - name: Test expected result
     command: diff results/test-pretty-print-only.xml /tmp/ansible-xml-beers.xml

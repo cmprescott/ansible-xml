@@ -8,7 +8,7 @@
     xml:
       path: /tmp/ansible-xml-beers.xml
       xpath: /business/beers
-      pretty_print: True
+      pretty_print: yes
       add_children:
         - beer: "Old Rasputin"
 

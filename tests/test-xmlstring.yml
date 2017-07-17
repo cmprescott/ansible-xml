@@ -2,7 +2,7 @@
   - name: Read from xmlstring
     xml:
       xmlstring: "{{ lookup('file', 'fixtures/ansible-xml-beers.xml') }}"
-      pretty_print: True
+      pretty_print: yes
     register: xmlresponse
  
   - name: Write result to file
@@ -17,7 +17,7 @@
     xml:
       xmlstring: "{{ lookup('file', 'fixtures/ansible-xml-beers.xml') }}"
       xpath: /business/beers
-      pretty_print: True
+      pretty_print: yes
       add_children:
         - beer: "Old Rasputin"
     register: xmlresponse_modification
