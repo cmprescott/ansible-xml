@@ -1,17 +1,25 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#
-# xml - Manage bits and pieces of XML files
-#
+
 # Copyright 2014, Red Hat, Inc.
 # Tim Bielawa <tbielawa@redhat.com>
 # Magnus Hedemark <mhedemar@redhat.com>
 #
-# This software may be freely redistributed under the terms of the GNU
-# general public license version 2.
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
 
 ANSIBLE_METADATA = {'metadata_version': '1.0',
                     'status': ['preview'],
@@ -95,7 +103,7 @@ options:
     choices: [ xml, yaml ]
     default: yaml
 requirements:
-- lxml
+- lxml >= 2.3.0
 notes:
 - This module does not handle complicated xpath expressions.
   So limit xpath selectors to simple expressions.
@@ -587,20 +595,19 @@ def children_to_nodes(module=None, children=[], type='yaml'):
     return [child_to_element(module, child, type) for child in children]
 
 
-def finish(m, tree, xpath, namespaces, changed=False, msg="", hitcount=0, matches=[]):
-    actions = dict(xpath=xpath, namespaces=namespaces, state=m.params['state'])
+def finish(module, tree, xpath, namespaces, changed=False, msg="", hitcount=0, matches=[]):
+    actions = dict(xpath=xpath, namespaces=namespaces, state=module.params['state'])
 
     if not changed:
-        m.exit_json(changed=changed, actions=actions, msg=msg, count=hitcount, matches=matches)
+        module.exit_json(changed=changed, actions=actions, msg=msg, count=hitcount, matches=matches)
 
-    if m.params['path']:
-        xml_file = os.path.expanduser(m.params['path'])
-        tree.write(xml_file, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
-        m.exit_json(changed=changed, actions=actions, msg=msg, count=hitcount, matches=matches)
+    if module.params['path']:
+        tree.write(module.params['path'], xml_declaration=True, encoding='UTF-8', pretty_print=module.params['pretty_print'])
+        module.exit_json(changed=changed, actions=actions, msg=msg, count=hitcount, matches=matches)
 
-    if m.params['xmlstring']:
-        xml_string = etree.tostring(tree, xml_declaration=True, encoding='UTF-8', pretty_print=m.params['pretty_print'])
-        m.exit_json(changed=changed, actions=actions, msg=msg, count=hitcount, matches=matches, xmlstring=xml_string)
+    if module.params['xmlstring']:
+        xml_string = etree.tostring(tree, xml_declaration=True, encoding='UTF-8', pretty_print=module.params['pretty_print'])
+        module.exit_json(changed=changed, actions=actions, msg=msg, count=hitcount, matches=matches, xmlstring=xml_string)
 
 
 def decode(value):
@@ -620,8 +627,8 @@ def decode(value):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            path=dict(type='path', default='', aliases=['dest', 'file']),
-            xmlstring=dict(type='str', default=''),
+            path=dict(type='path', aliases=['dest', 'file']),
+            xmlstring=dict(type='str'),
             xpath=dict(type='str', default='/'),
             namespaces=dict(type='dict', default={}),
             state=dict(type='str', default='present', choices=['absent', 'present'], aliases=['ensure']),
