@@ -1,6 +1,21 @@
 # Change Log
 
 ## [Unreleased] - 
+### Added
+- Issue template
+
+### Updated
+- Sync to upstream in ansible
+
+## [0.4.0] - 2017-07-19
+### Added
+- Dot in regex for implicit nodes
+- Implicit element creation via XPath
+
+### Updated
+- Relicense to GPLv3+ header
+- Codestyle for inclusion for being upstreamed to Ansible 
+- Guard main()
 
 ## [0.3.4] - 2016-07-06
 ### Added
@@ -66,7 +81,8 @@
 - unit tests
 - Travis continuous integration
 
-[Unreleased]: https://github.com/cmprescott/ansible-xml/compare/0.3.4...HEAD
+[Unreleased]: https://github.com/cmprescott/ansible-xml/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/cmprescott/ansible-xml/compare/0.3.4...0.4.0
 [0.3.4]: https://github.com/cmprescott/ansible-xml/compare/0.3.3...0.3.4
 [0.3.3]: https://github.com/cmprescott/ansible-xml/compare/0.3.2...0.3.3
 [0.3.2]: https://github.com/cmprescott/ansible-xml/compare/0.3.1...0.3.2
