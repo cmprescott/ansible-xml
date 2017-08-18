@@ -1,10 +1,10 @@
 Name: ansible-xml
 BuildArch: noarch
-Version: 0.3.4
+Version: 1.0.0
 Release: 1
 Summary: Ansible module for manipulating bits and pieces of XML files and strings
 Vendor: Chris Prescott
-License: GPLv2
+License: GPLv3
 URL: https://github.com/cmprescott/ansible-xml
 Packager: Styopa Semenukha <semenukha@gmail.com>
 

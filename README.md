@@ -1,14 +1,13 @@
 [![Build Status][travis_badge]][travis_results]
 # ansible-xml
 
-[Ansible][src_ansible] module for manipulating
-bits and pieces of XML files and strings.
+[Ansible][src_ansible] module for manipulating bits and pieces of XML files and strings. This module is currently in devel version of [Ansible][github_repo_ansible]. It should be released as part of Ansible 2.4.0 in [Mid-September](https://github.com/ansible/ansible/blob/devel/docs/docsite/rst/roadmap/ROADMAP_2_4.rst). As a consequence, all the issues should be reported to [ansible](https://github.com/ansible/ansible/issues).
 
 # Installation
 
 * This module requires Python bindings to ``libxml`` version 2.3 or later. This is usually in a package called 
   ``python-lxml``. Install with ``apt-get install python-lxml``, ``yum install python-lxml``, or ``pip install lxml``.
-* This module is **NOT** included with Ansible. Install with ``git clone https://github.com/cmprescott/ansible-xml.git``,
+* This module is **NOT** included with Ansible v2.3 and below. Install with ``git clone https://github.com/cmprescott/ansible-xml.git``,
   or ``ansible-galaxy install cmprescott.xml``. Valid installation paths are 
   [the playbook's library directory][doc_install_in_playbook], 
   [the playbook's roles directory and include in the playbook][doc_install_as_role], 
@@ -18,7 +17,8 @@ bits and pieces of XML files and strings.
 
 * Original module created by [@github_rhinception][github_team_rhinception].
 * On 2015-05-05, [@tbielawa][github_user_tbielawa] transferred the project over to [@cmprescott][github_user_cmprescott] to resolve [issue #16][github_issue_16].
-* This software is available under the terms of the GPLv2 license.
+* On 2017-08-08, this module was merged upstream into [Ansible][github_repo_ansible].
+* This software is available under the terms of the GPLv3 license.
 * Hi there, we have unit tests!
 
 # What is XPath?
@@ -192,6 +192,7 @@ children elements.
 [doc_install_in_path]: http://docs.ansible.com/ansible/developing_modules.html#module-paths
 [doc_install_in_playbook]: http://docs.ansible.com/ansible/playbooks_best_practices.html#bundling-ansible-modules-with-playbooks
 [github_issue_16]: https://github.com/cmprescott/ansible-xml/issues/16
+[github_repo_ansible]: https://github.com/ansible/ansible
 [github_user_cmprescott]: https://github.com/cmprescott
 [github_user_tbielawa]: https://github.com/tbielawa
 [github_team_rhinception]: https://github.com/RHInception
