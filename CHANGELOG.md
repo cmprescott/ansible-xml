@@ -1,11 +1,16 @@
 # Change Log
 
-## [Unreleased] - 
+## [Unreleased]
+
+## [1.0.0] - 2017-08-18
 ### Added
 - Issue template
 
 ### Updated
-- Sync to upstream in ansible
+- Sync with upstream in Ansible
+
+### Fixed
+- Documentation reporting incorrect license
 
 ## [0.4.0] - 2017-07-19
 ### Added
@@ -81,7 +86,8 @@
 - unit tests
 - Travis continuous integration
 
-[Unreleased]: https://github.com/cmprescott/ansible-xml/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/cmprescott/ansible-xml/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/cmprescott/ansible-xml/compare/0.4.0...1.0.0
 [0.4.0]: https://github.com/cmprescott/ansible-xml/compare/0.3.4...0.4.0
 [0.3.4]: https://github.com/cmprescott/ansible-xml/compare/0.3.3...0.3.4
 [0.3.3]: https://github.com/cmprescott/ansible-xml/compare/0.3.2...0.3.3
