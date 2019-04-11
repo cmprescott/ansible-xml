@@ -1,11 +1,9 @@
 Thank you for your effort to improve this module!
 
-The xml module is upstream now and ships with Ansible v2.4 which is to be released in mid-September:
+The xml module is upstream now and ships with Ansible since v2.4 (September 2017):
 https://github.com/ansible/ansible/blob/devel/docs/docsite/rst/roadmap/ROADMAP_2_4.rst
 
-Please try running ansible from source:
-http://docs.ansible.com/ansible/intro_installation.html#running-from-source
-and see if the issue is already fixed.
+Please try running a newer version of ansible and see if the issue is already fixed.
 
 Note that you'll need version of lxml>=2.3.0.
 
